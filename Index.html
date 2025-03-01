@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>P2P YouTube на WebTorrent</title>
+    <script src="https://cdn.jsdelivr.net/npm/webtorrent@latest/webtorrent.min.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            margin: 20px;
+        }
+        #video-container {
+            margin-top: 20px;
+            width: 100%;
+            max-width: 720px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+        input, button {
+            margin: 10px;
+            padding: 10px;
+            font-size: 16px;
+        }
+        video {
+            width: 100%;
+            border: 1px solid #ccc;
+        }
+    </style>
+</head>
+<body>
+    <h1>P2P Відеоплатформа</h1>
+    <input type="file" id="upload-input" accept="video/mp4,video/webm,video/ogg">
+    <p><strong>Магнет-посилання:</strong> <span id="magnet-link"></span></p>
+    
+    <input type="text" id="magnet-input" placeholder="Вставте магнет-посилання">
+    <button id="play-button">Відтворити</button>
+    
+    <div id="video-container"></div>
+
+    <script>
+        // Імпортуємо WebTorrent
+        const client = new WebTorrent();
+
+        // Функція для завантаження відео
+        function uploadVideo(file) {
+            client.seed(file, torrent => {
+                console.log('Відео доступне за магнет-посиланням:', torrent.magnetURI);
+                document.getElementById('magnet-link').innerText = torrent.magnetURI;
+            });
+        }
+
+        // Функція для відтворення відео через магнет-посилання
+        function playVideo(magnetURI) {
+            client.add(magnetURI, torrent => {
+                const file = torrent.files.find(file => file.name.endsWith('.mp4') || file.name.endsWith('.webm') || file.name.endsWith('.ogg'));
+                if (file) {
+                    file.appendTo('#video-container');
+                }
+            });
+        }
+
+        // Додаємо обробник подій для завантаження файлу
+        document.getElementById('upload-input').addEventListener('change', event => {
+            const file = event.target.files[0];
+            if (file) {
+                uploadVideo(file);
+            }
+        });
+
+        // Додаємо обробник для відтворення за магнет-посиланням
+        document.getElementById('play-button').addEventListener('click', () => {
+            const magnetURI = document.getElementById('magnet-input').value;
+            if (magnetURI) {
+                playVideo(magnetURI);
+            }
+        });
+    </script>
+</body>
+</html>
