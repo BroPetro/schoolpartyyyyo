@@ -3,79 +3,526 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>P2P YouTube на WebTorrent</title>
-    <script src="https://cdn.jsdelivr.net/npm/webtorrent@latest/webtorrent.min.js"></script>
+    <title>Стратегія зверху (P2P, реальний час)</title>
     <style>
         body {
-            font-family: Arial, sans-serif;
-            text-align: center;
-            margin: 20px;
+            margin: 0;
+            font-family: 'Segoe UI', Arial, sans-serif;
+            background-color: #1a1a1a;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
         }
-        #video-container {
-            margin-top: 20px;
-            width: 100%;
-            max-width: 720px;
-            margin-left: auto;
-            margin-right: auto;
+        #game-container {
+            position: relative;
+            width: 600px;
+            height: 600px;
+            background: linear-gradient(135deg, #2c3e50, #34495e);
+            border-radius: 10px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
         }
-        input, button {
-            margin: 10px;
-            padding: 10px;
-            font-size: 16px;
+        #ui {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            background: rgba(0, 0, 0, 0.85);
+            color: #e0e0e0;
+            padding: 15px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+            max-width: 250px;
         }
-        video {
-            width: 100%;
-            border: 1px solid #ccc;
+        #peer-id, #status, #resources, #error-log {
+            margin: 8px 0;
+            font-size: 14px;
+        }
+        #connect-form {
+            margin: 10px 0;
+        }
+        input {
+            padding: 8px;
+            margin: 5px 0;
+            border: none;
+            border-radius: 5px;
+            background: #333;
+            color: #e0e0e0;
+            width: 180px;
+        }
+        button {
+            padding: 8px 12px;
+            margin: 5px;
+            border: none;
+            border-radius: 5px;
+            background: #3498db;
+            color: #fff;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+        button:hover {
+            background: #2980b9;
+        }
+        #game-canvas {
+            width: 600px;
+            height: 600px;
+            border-radius: 10px;
+            border: 2px solid #34495e;
+        }
+        .hidden {
+            display: none;
+        }
+        #error-log {
+            color: #e74c3c;
+            font-size: 12px;
         }
     </style>
 </head>
 <body>
-    <h1>P2P Відеоплатформа</h1>
-    <input type="file" id="upload-input" accept="video/mp4,video/webm,video/ogg">
-    <p><strong>Магнет-посилання:</strong> <span id="magnet-link"></span></p>
-    
-    <input type="text" id="magnet-input" placeholder="Вставте магнет-посилання">
-    <button id="play-button">Відтворити</button>
-    
-    <div id="video-container"></div>
+    <div id="game-container">
+        <div id="ui">
+            <div id="peer-id">Ваш ID: <span id="my-id">Очікування...</span></div>
+            <div id="connect-form">
+                <input type="text" id="peer-id-input" placeholder="Введіть ID опонента">
+                <button onclick="connectToPeer()">Підключитися</button>
+            </div>
+            <div id="status">Очікування підключення...</div>
+            <div id="resources">Ресурси: <span id="resource-count">0</span></div>
+            <div id="error-log"></div>
+            <button onclick="startBuilding('base')">Побудувати базу (50 ресурсів)</button>
+            <button onclick="startBuilding('barracks')">Побудувати казарму (40 ресурсів)</button>
+            <button onclick="startBuilding('tower')">Побудувати вежу (30 ресурсів)</button>
+            <button onclick="startBuilding('wall')">Побудувати стіну (20 ресурсів)</button>
+            <button onclick="startTrainingUnit()">Наняти юніта (20 ресурсів)</button>
+        </div>
+        <canvas id="game-canvas" width="600" height="600"></canvas>
+        <img id="base-texture" src="./textures/base.jpg" class="hidden">
+        <img id="barracks-texture" src="./textures/barracks.jpg" class="hidden">
+        <img id="tower-texture" src="./textures/tower.jpg" class="hidden">
+        <img id="wall-texture" src="./textures/wall.jpg" class="hidden">
+        <img id="unit-texture" src="./textures/unit.jpg" class="hidden">
+        <img id="bush-texture" src="./textures/bush.jpg" class="hidden">
+        <img id="ground-texture" src="./textures/ground.jpg" class="hidden">
+    </div>
 
+    <script src="https://unpkg.com/peerjs@1.5.2/dist/peerjs.min.js"></script>
     <script>
-        // Імпортуємо WebTorrent
-        const client = new WebTorrent();
+        // Error logging function
+        function logError(message) {
+            console.error(message);
+            document.getElementById('error-log').textContent = `Помилка: ${message}`;
+        }
 
-        // Функція для завантаження відео
-        function uploadVideo(file) {
-            client.seed(file, torrent => {
-                console.log('Відео доступне за магнет-посиланням:', torrent.magnetURI);
-                document.getElementById('magnet-link').innerText = torrent.magnetURI;
+        // Check if PeerJS is loaded
+        if (typeof Peer === 'undefined') {
+            logError('Не вдалося завантажити PeerJS. Перевірте підключення до мережі або CDN.');
+            throw new Error('PeerJS not loaded');
+        }
+
+        const peer = new Peer();
+        let conn = null;
+        let myPlayer = null;
+        let resources = 100;
+        let buildings = [];
+        let units = [];
+        let opponentBuildings = [];
+        let opponentUnits = [];
+        let bushes = [];
+        let buildingType = null;
+        let trainingUnit = false;
+        let selectedUnit = null;
+
+        // Canvas setup
+        const canvas = document.getElementById('game-canvas');
+        if (!canvas) {
+            logError('Не знайдено елемент canvas. Перевірте HTML.');
+            throw new Error('Canvas not found');
+        }
+        const ctx = canvas.getContext('2d');
+        const mapSize = 20;
+        const scale = 600 / mapSize;
+
+        // Load textures with fallback colors
+        const textures = {
+            base: { img: document.getElementById('base-texture'), fallback: '#7f8c8d' },
+            barracks: { img: document.getElementById('barracks-texture'), fallback: '#8b4513' },
+            tower: { img: document.getElementById('tower-texture'), fallback: '#34495e' },
+            wall: { img: document.getElementById('wall-texture'), fallback: '#2c3e50' },
+            unit: { img: document.getElementById('unit-texture'), fallback: myPlayer === 1 ? '#e74c3c' : '#3498db' },
+            bush: { img: document.getElementById('bush-texture'), fallback: '#27ae60' },
+            ground: { img: document.getElementById('ground-texture'), fallback: '#2ecc71' }
+        };
+
+        // Check if textures are loaded
+        function isImageLoaded(img) {
+            return img && img.complete && img.naturalWidth !== 0;
+        }
+
+        // Generate bushes
+        for (let i = 0; i < 10; i++) {
+            bushes.push({
+                x: Math.random() * mapSize - mapSize / 2,
+                z: Math.random() * mapSize - mapSize / 2
             });
         }
 
-        // Функція для відтворення відео через магнет-посилання
-        function playVideo(magnetURI) {
-            client.add(magnetURI, torrent => {
-                const file = torrent.files.find(file => file.name.endsWith('.mp4') || file.name.endsWith('.webm') || file.name.endsWith('.ogg'));
-                if (file) {
-                    file.appendTo('#video-container');
+        // Draw the game
+        function draw() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            // Draw ground
+            if (isImageLoaded(textures.ground.img)) {
+                ctx.drawImage(textures.ground.img, 0, 0, canvas.width, canvas.height);
+            } else {
+                ctx.fillStyle = textures.ground.fallback;
+                ctx.fillRect(0, 0, canvas.width, canvas.height);
+            }
+            // Draw grid
+            ctx.strokeStyle = 'rgba(255, 255, 255, 0.3)';
+            ctx.lineWidth = 1;
+            for (let i = 0; i <= mapSize; i++) {
+                ctx.beginPath();
+                ctx.moveTo(i * scale, 0);
+                ctx.lineTo(i * scale, canvas.height);
+                ctx.stroke();
+                ctx.beginPath();
+                ctx.moveTo(0, i * scale);
+                ctx.lineTo(canvas.width, i * scale);
+                ctx.stroke();
+            }
+            // Draw bushes
+            bushes.forEach(b => {
+                if (isImageLoaded(textures.bush.img)) {
+                    ctx.globalAlpha = 0.7;
+                    ctx.drawImage(textures.bush.img, (b.x + mapSize / 2) * scale - 15, (b.z + mapSize / 2) * scale - 15, 30, 30);
+                    ctx.globalAlpha = 1;
+                } else {
+                    ctx.fillStyle = textures.bush.fallback;
+                    ctx.fillRect((b.x + mapSize / 2) * scale - 15, (b.z + mapSize / 2) * scale - 15, 30, 30);
+                }
+            });
+            // Draw buildings
+            buildings.forEach(b => {
+                if (isImageLoaded(textures[b.type].img)) {
+                    ctx.drawImage(textures[b.type].img, (b.x + mapSize / 2) * scale - 15, (b.z + mapSize / 2) * scale - 15, 30, 30);
+                } else {
+                    ctx.fillStyle = textures[b.type].fallback;
+                    ctx.fillRect((b.x + mapSize / 2) * scale - 15, (b.z + mapSize / 2) * scale - 15, 30, 30);
+                }
+                if (b.type === 'base') {
+                    ctx.beginPath();
+                    ctx.arc((b.x + mapSize / 2) * scale, (b.z + mapSize / 2) * scale, 2 * scale, 0, 2 * Math.PI);
+                    ctx.strokeStyle = 'rgba(255, 255, 255, 0.5)';
+                    ctx.stroke();
+                }
+            });
+            opponentBuildings.forEach(b => {
+                if (isImageLoaded(textures[b.type].img)) {
+                    ctx.drawImage(textures[b.type].img, (b.x + mapSize / 2) * scale - 15, (b.z + mapSize / 2) * scale - 15, 30, 30);
+                } else {
+                    ctx.fillStyle = textures[b.type].fallback;
+                    ctx.fillRect((b.x + mapSize / 2) * scale - 15, (b.z + mapSize / 2) * scale - 15, 30, 30);
+                }
+                if (b.type === 'base') {
+                    ctx.beginPath();
+                    ctx.arc((b.x + mapSize / 2) * scale, (b.z + mapSize / 2) * scale, 2 * scale, 0, 2 * Math.PI);
+                    ctx.strokeStyle = 'rgba(255, 255, 255, 0.5)';
+                    ctx.stroke();
+                }
+            });
+            // Draw units
+            units.forEach(u => {
+                let inBush = bushes.some(b => Math.sqrt((b.x - u.x) ** 2 + (b.z - u.z) ** 2) < 0.5);
+                if (!inBush) {
+                    if (isImageLoaded(textures.unit.img)) {
+                        ctx.drawImage(textures.unit.img, (u.x + mapSize / 2) * scale - 10, (u.z + mapSize / 2) * scale - 10, 20, 20);
+                    } else {
+                        ctx.fillStyle = textures.unit.fallback;
+                        ctx.fillRect((u.x + mapSize / 2) * scale - 10, (u.z + mapSize / 2) * scale - 10, 20, 20);
+                    }
+                }
+                if (u === selectedUnit) {
+                    ctx.strokeStyle = '#f1c40f';
+                    ctx.strokeRect((u.x + mapSize / 2) * scale - 10, (u.z + mapSize / 2) * scale - 10, 20, 20);
+                }
+            });
+            opponentUnits.forEach(u => {
+                let inBush = bushes.some(b => Math.sqrt((b.x - u.x) ** 2 + (b.z - u.z) ** 2) < 0.5);
+                if (!inBush) {
+                    if (isImageLoaded(textures.unit.img)) {
+                        ctx.drawImage(textures.unit.img, (u.x + mapSize / 2) * scale - 10, (u.z + mapSize / 2) * scale - 10, 20, 20);
+                    } else {
+                        ctx.fillStyle = textures.unit.fallback;
+                        ctx.fillRect((u.x + mapSize / 2) * scale - 10, (u.z + mapSize / 2) * scale - 10, 20, 20);
+                    }
                 }
             });
         }
 
-        // Додаємо обробник подій для завантаження файлу
-        document.getElementById('upload-input').addEventListener('change', event => {
-            const file = event.target.files[0];
-            if (file) {
-                uploadVideo(file);
-            }
+        peer.on('open', (id) => {
+            document.getElementById('my-id').textContent = id;
+            document.getElementById('status').textContent = 'Очікуємо підключення опонента...';
+            textures.unit.fallback = myPlayer === 1 ? '#e74c3c' : '#3498db';
         });
 
-        // Додаємо обробник для відтворення за магнет-посиланням
-        document.getElementById('play-button').addEventListener('click', () => {
-            const magnetURI = document.getElementById('magnet-input').value;
-            if (magnetURI) {
-                playVideo(magnetURI);
-            }
+        peer.on('error', (err) => {
+            logError(`Помилка PeerJS: ${err.type} - ${err.message}`);
         });
+
+        peer.on('connection', (connection) => {
+            conn = connection;
+            myPlayer = 1;
+            document.getElementById('status').textContent = 'Ви - Гравець 1. Починайте гру!';
+            textures.unit.fallback = myPlayer === 1 ? '#e74c3c' : '#3498db';
+            setupConnection();
+        });
+
+        function connectToPeer() {
+            const peerId = document.getElementById('peer-id-input').value;
+            if (!peerId) {
+                logError('Введіть ID опонента.');
+                return;
+            }
+            conn = peer.connect(peerId);
+            myPlayer = 2;
+            document.getElementById('status').textContent = 'Ви - Гравець 2. Починайте гру!';
+            textures.unit.fallback = myPlayer === 1 ? '#e74c3c' : '#3498db';
+            setupConnection();
+        }
+
+        function setupConnection() {
+            conn.on('data', (data) => {
+                try {
+                    if (data.type === 'build') {
+                        opponentBuildings.push({ x: data.x, z: data.z, type: data.buildType, player: data.player, health: data.health, id: data.id });
+                    } else if (data.type === 'train') {
+                        opponentUnits.push({ x: data.x, z: data.z, player: data.player, health: 50, id: data.id, target: null });
+                    } else if (data.type === 'moveUnit') {
+                        const unit = opponentUnits.find(u => u.id === data.id);
+                        if (unit) {
+                            unit.target = { x: data.x, z: data.z };
+                        }
+                    } else if (data.type === 'attack') {
+                        handleAttack(data.targetId, data.player);
+                    }
+                    draw();
+                } catch (e) {
+                    logError(`Помилка обробки даних: ${e.message}`);
+                }
+            });
+
+            conn.on('error', (err) => {
+                logError(`Помилка з'єднання: ${err}`);
+            });
+        }
+
+        function isPositionValid(x, z, player) {
+            const exclusionRadius = 2;
+            const allBuildings = [...buildings, ...opponentBuildings];
+            for (let base of allBuildings) {
+                if (base.type === 'base' && base.player !== player) {
+                    const distance = Math.sqrt((base.x - x) ** 2 + (base.z - z) ** 2);
+                    if (distance < exclusionRadius) {
+                        return false;
+                    }
+                }
+            }
+            return Math.abs(x) <= mapSize / 2 && Math.abs(z) <= mapSize / 2;
+        }
+
+        function startBuilding(type) {
+            const costs = { base: 50, barracks: 40, tower: 30, wall: 20 };
+            if (resources < costs[type] || !conn) {
+                logError('Недостатньо ресурсів або немає з\'єднання.');
+                return;
+            }
+            buildingType = type;
+            trainingUnit = false;
+            selectedUnit = null;
+            document.getElementById('status').textContent = `Клікніть на карті, щоб розмістити ${type === 'base' ? 'базу' : type === 'barracks' ? 'казарму' : type === 'tower' ? 'вежу' : 'стіну'}`;
+        }
+
+        function startTrainingUnit() {
+            if (resources < 20 || !conn) {
+                logError('Недостатньо ресурсів або немає з\'єднання.');
+                return;
+            }
+            const hasBarracks = buildings.some(b => b.type === 'barracks' && b.player === myPlayer);
+            if (!hasBarracks) {
+                logError('Потрібна казарма для найму юнітів.');
+                return;
+            }
+            trainingUnit = true;
+            buildingType = null;
+            selectedUnit = null;
+            document.getElementById('status').textContent = 'Клікніть на карті, щоб розмістити юніта';
+        }
+
+        canvas.addEventListener('click', (event) => {
+            if (!conn) {
+                logError('Немає з\'єднання.');
+                return;
+            }
+            const rect = canvas.getBoundingClientRect();
+            const x = (event.clientX - rect.left) / scale - mapSize / 2;
+            const z = (event.clientY - rect.top) / scale - mapSize / 2;
+
+            // Select unit
+            if (!buildingType && !trainingUnit) {
+                const clickedUnit = units.find(u => Math.sqrt((u.x - x) ** 2 + (u.z - z) ** 2) < 0.5);
+                if (clickedUnit) {
+                    selectedUnit = clickedUnit;
+                    document.getElementById('status').textContent = 'Юніт вибрано. Клікніть, щоб перемістити або атакувати';
+                    draw();
+                    return;
+                }
+            }
+
+            // Move or attack with selected unit
+            if (selectedUnit) {
+                const targetBuilding = opponentBuildings.find(b => Math.sqrt((b.x - x) ** 2 + (b.z - z) ** 2) < 0.5);
+                const targetUnit = opponentUnits.find(u => Math.sqrt((u.x - x) ** 2 + (u.z - z) ** 2) < 0.5 && !bushes.some(b => Math.sqrt((b.x - u.x) ** 2 + (b.z - u.z) ** 2) < 0.5));
+                if (targetBuilding || targetUnit) {
+                    conn.send({ type: 'attack', targetId: (targetBuilding || targetUnit).id, player: myPlayer });
+                    handleAttack((targetBuilding || targetUnit).id, myPlayer);
+                } else {
+                    if (isPositionValid(x, z, myPlayer)) {
+                        selectedUnit.target = { x, z };
+                        conn.send({ type: 'moveUnit', id: selectedUnit.id, x, z });
+                    } else {
+                        logError('Недійсна позиція для переміщення.');
+                    }
+                }
+                selectedUnit = null;
+                document.getElementById('status').textContent = 'Виберіть дію або юніта';
+                draw();
+                return;
+            }
+
+            // Place building or unit
+            if (!isPositionValid(x, z, myPlayer)) {
+                logError('Недійсна позиція: занадто близько до ворожої бази або поза картою.');
+                return;
+            }
+            const id = Math.random().toString(36).substr(2, 9);
+            if (buildingType) {
+                const costs = { base: 50, barracks: 40, tower: 30, wall: 20 };
+                const healths = { base: 100, barracks: 75, tower: 50, wall: 50 };
+                resources -= costs[buildingType];
+                buildings.push({ x, z, type: buildingType, player: myPlayer, health: healths[buildingType], id });
+                conn.send({ type: 'build', buildType: buildingType, x, z, player: myPlayer, health: healths[buildingType], id });
+                buildingType = null;
+            } else if (trainingUnit) {
+                resources -= 20;
+                units.push({ x, z, player: myPlayer, health: 50, id, target: null });
+                conn.send({ type: 'train', x, z, player: myPlayer, id });
+                trainingUnit = false;
+            }
+            document.getElementById('status').textContent = 'Виберіть дію або юніта';
+            draw();
+            updateResourcesUI();
+        });
+
+        function handleAttack(targetId, attackingPlayer) {
+            const allObjects = [...buildings, ...units, ...opponentBuildings, ...opponentUnits];
+            const target = allObjects.find(obj => obj.id === targetId);
+            if (target) {
+                target.health -= 25;
+                if (target.health <= 0) {
+                    if (target.player === myPlayer) {
+                        if (target.type) {
+                            buildings = buildings.filter(b => b.id !== targetId);
+                        } else {
+                            units = units.filter(u => u.id !== targetId);
+                        }
+                    } else {
+                        if (target.type) {
+                            opponentBuildings = opponentBuildings.filter(b => b.id !== targetId);
+                        } else {
+                            opponentUnits = opponentUnits.filter(u => u.id !== targetId);
+                        }
+                    }
+                }
+                draw();
+                checkGameEnd();
+            } else {
+                logError('Ціль для атаки не знайдена.');
+            }
+        }
+
+        function updateResourcesUI() {
+            document.getElementById('resource-count').textContent = Math.floor(resources);
+        }
+
+        function checkGameEnd() {
+            if (opponentBuildings.length === 0 && opponentUnits.length === 0) {
+                document.getElementById('status').textContent = `Гра закінчена! Переміг Гравець ${myPlayer}!`;
+            } else if (buildings.length === 0 && units.length === 0) {
+                document.getElementById('status').textContent = `Гра закінчена! Переміг Гравець ${myPlayer === 1 ? 2 : 1}!`;
+            }
+        }
+
+        function updateUnits() {
+            units.forEach(unit => {
+                if (unit.target) {
+                    const dx = unit.target.x - unit.x;
+                    const dz = unit.target.z - unit.z;
+                    const distance = Math.sqrt(dx ** 2 + dz ** 2);
+                    if (distance > 0.1) {
+                        const speed = 0.05;
+                        unit.x += (dx / distance) * speed;
+                        unit.z += (dz / distance) * speed;
+                    } else {
+                        unit.target = null;
+                    }
+                }
+            });
+            opponentUnits.forEach(unit => {
+                if (unit.target) {
+                    const dx = unit.target.x - unit.x;
+                    const dz = unit.target.z - unit.z;
+                    const distance = Math.sqrt(dx ** 2 + dz ** 2);
+                    if (distance > 0.1) {
+                        const speed = 0.05;
+                        unit.x += (dx / distance) * speed;
+                        unit.z += (dz / distance) * speed;
+                    } else {
+                        unit.target = null;
+                    }
+                }
+            });
+        }
+
+        function autoAttackTowers() {
+            buildings.forEach(b => {
+                if (b.type === 'tower' && b.player === myPlayer) {
+                    const targets = [...opponentBuildings, ...opponentUnits.filter(u => !bushes.some(b => Math.sqrt((b.x - u.x) ** 2 + (b.z - u.z) ** 2) < 0.5))];
+                    const inRange = targets.filter(t => Math.sqrt((t.x - b.x) ** 2 + (t.z - b.z) ** 2) < 3);
+                    if (inRange.length > 0) {
+                        const target = inRange[Math.floor(Math.random() * inRange.length)];
+                        conn.send({ type: 'attack', targetId: target.id, player: myPlayer });
+                        handleAttack(target.id, myPlayer);
+                    }
+                }
+            });
+        }
+
+        function animate() {
+            try {
+                requestAnimationFrame(animate);
+                resources += 0.1;
+                updateUnits();
+                autoAttackTowers();
+                updateResourcesUI();
+                draw();
+            } catch (e) {
+                logError(`Помилка анімації: ${e.message}`);
+            }
+        }
+        animate();
+
+        // Global error handler
+        window.onerror = (message, source, lineno, colno, error) => {
+            logError(`Script error: ${message} у файлі ${source}:${lineno}:${colno}`);
+        };
     </script>
 </body>
 </html>
