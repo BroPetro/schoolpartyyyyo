@@ -1,3 +1,4 @@
+javascript
 self.addEventListener('install', event => {
     event.waitUntil(
         caches.open('bioworld-v1').then(cache => {
