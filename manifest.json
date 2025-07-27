@@ -1,0 +1,22 @@
+{
+    "name": "BioWorld",
+    "short_name": "BioWorld",
+    "description": "Досліджуй світ біології з інтерактивними уроками та тестами!",
+    "start_url": "/index.html",
+    "display": "standalone",
+    "background_color": "#e0f7fa",
+    "theme_color": "#2e7d32",
+    "icons": [
+        {
+            "src": "/Assets/icon.png",
+            "sizes": "192x192",
+            "type": "image/png"
+        },
+        {
+            "src": "/Assets/icon.png",
+            "sizes": "512x512",
+            "type": "image/png"
+        }
+    ],
+    "scope": "/"
+}
