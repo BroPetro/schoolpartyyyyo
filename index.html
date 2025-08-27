@@ -3,168 +3,153 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Квитки на шкільну вечірку</title>
+    <title>Замовлення квитків на шкільну вечірку</title>
     <style>
+        :root {
+            --bg: #0e0f12;
+            --card: #151821;
+            --text: #e6e8f0;
+            --muted: #9aa3b2;
+            --accent: #6ae28e;
+            --danger: #ff6b6b;
+            --ring: rgba(106, 226, 142, 0.35);
+        }
+
+        * { box-sizing: border-box; }
+        html, body { margin: 0; padding: 0; }
         body {
-            font-family: Arial, sans-serif;
-            background-color: #f0f0f0;
-            min-height: 100vh;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            padding: 16px;
-            margin: 0;
+            background: radial-gradient(1200px 800px at 20% -10%, #1b1f2b, #0e0f12);
+            color: var(--text);
+            font: 16px/1.4 system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, "Noto Sans", Arial, sans-serif;
         }
-        .container {
-            max-width: 400px;
-            width: 100%;
-            background-color: #fff;
-            padding: 24px;
-            border-radius: 8px;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+
+        .wrap { width: min(960px, 92vw); margin: 0 auto; padding: 20px 0; }
+        header.wrap { padding-top: 32px; }
+
+        h1 { margin: 0 0 8px; font-size: 30px; }
+        h2 { margin: 0 0 14px; font-size: 22px; }
+
+        .muted { color: var(--muted); }
+
+        .card {
+            background: var(--card);
+            border: 1px solid #222635;
+            border-radius: 14px;
+            padding: 18px;
+            margin: 14px 0 20px;
+            box-shadow: 0 10px 24px rgba(0,0,0,0.22), inset 0 1px 0 rgba(255,255,255,0.02);
         }
-        h1 {
-            font-size: 24px;
-            font-weight: bold;
-            text-align: center;
-            margin-bottom: 24px;
+
+        .stats {
+            display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin-top: 14px;
         }
-        h2 {
-            font-size: 18px;
-            font-weight: bold;
-            text-align: center;
-            margin-bottom: 16px;
+        .stat { background: var(--card); border: 1px solid #232739; padding: 12px; border-radius: 10px; text-align: center; }
+        .stat .label { color: var(--muted); font-size: 12px; }
+        .stat .value { font-size: 22px; font-weight: 700; margin-top: 4px; }
+
+        .grid {
+            display: grid; gap: 12px; grid-template-columns: repeat(2, 1fr);
         }
-        .form-group {
-            margin-bottom: 16px;
+        .field { display: flex; flex-direction: column; gap: 6px; }
+        .field span { font-weight: 600; }
+        .field input, .field select {
+            border: 1px solid #2b3147; background: #0f1118; color: var(--text);
+            padding: 10px 12px; border-radius: 8px; outline: none; transition: box-shadow .2s, border-color .2s;
         }
-        label {
-            display: block;
-            font-size: 14px;
-            font-weight: medium;
-            margin-bottom: 8px;
-        }
-        input[type="text"],
-        input[type="email"] {
-            width: 100%;
-            padding: 8px;
-            border: 1px solid #ccc;
-            border-radius: 4px;
-            box-sizing: border-box;
-        }
+        .field input:focus, .field select:focus { border-color: var(--accent); box-shadow: 0 0 0 4px var(--ring); }
+        .hint { color: var(--muted); font-size: 12px; }
+
         button {
-            width: 100%;
-            padding: 8px;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
-            font-size: 16px;
-            color: #fff;
+            appearance: none; border: 0; background: var(--accent); color: #0b0d12;
+            font-weight: 700; padding: 10px 16px; border-radius: 10px; cursor: pointer;
         }
-        button[type="submit"] {
-            background-color: #3b82f6;
+        button:disabled { opacity: .6; cursor: not-allowed; }
+        button.toggle-stop { background: var(--danger); }
+        button.toggle-start { background: var(--accent); }
+
+        .msg { margin-top: 10px; min-height: 18px; }
+        .msg.error { color: var(--danger); }
+        .msg.success { color: var(--accent); }
+
+        .admin-panel { display: none; }
+        .admin-panel.active { display: block; }
+        .admin-list { list-style: none; padding: 0; margin: 0; display: grid; gap: 8px; }
+        .admin-list li {
+            background: #0f121a; border: 1px solid #212535; padding: 10px 12px; border-radius: 8px;
         }
-        button[type="submit"]:hover {
-            background-color: #2563eb;
-        }
-        button.secondary {
-            background-color: #6b7280;
-        }
-        button.secondary:hover {
-            background-color: #4b5563;
-        }
-        button.check {
-            background-color: #10b981;
-        }
-        button.check:hover {
-            background-color: #059669;
-        }
-        .hidden {
-            display: none;
-        }
-        .qr-section {
-            text-align: center;
-            margin-top: 16px;
-        }
-        .qr-section p {
-            font-size: 14px;
-            margin-top: 8px;
-        }
-        .admin-section {
-            margin-top: 24px;
-        }
-        .error {
-            color: #dc2626;
-        }
-        .to-admin {
-            display: block;
-            text-align: center;
-            margin-top: 16px;
-            color: #3b82f6;
-            text-decoration: underline;
-            cursor: pointer;
-        }
-        .to-admin:hover {
-            color: #2563eb;
+
+        @media (max-width: 720px) {
+            .grid { grid-template-columns: 1fr; }
         }
     </style>
 </head>
 <body>
-    <div class="container">
-        <h1>Квитки на шкільну вечірку</h1>
-
-        <!-- Форма покупки квитка -->
-        <div id="ticketFormSection">
-            <form id="ticketForm" class="form-group">
-                <div class="form-group">
-                    <label for="name">Ім'я</label>
-                    <input type="text" id="name" required>
+    <header class="wrap">
+        <h1>Замовлення квитків на шкільну вечірку</h1>
+        <p class="muted">Заповніть форму, щоб забронювати квитки</p>
+    </header>
+    <div class="wrap">
+        <div class="card">
+            <div class="grid">
+                <div class="field">
+                    <span>Ім'я</span>
+                    <input type="text" id="name" placeholder="Введіть ваше ім'я">
+                    <div class="hint">Введіть ваше повне ім'я</div>
                 </div>
-                <div class="form-group">
-                    <label for="email">Email</label>
-                    <input type="email" id="email" required>
+                <div class="field">
+                    <span>Нік у Telegram</span>
+                    <input type="text" id="telegram" placeholder="Введіть ваш нік (@username)">
+                    <div class="hint">Наприклад, @username</div>
                 </div>
-                <button type="submit">Купити квиток</button>
-            </form>
+                <div class="field">
+                    <span>Клас</span>
+                    <input type="number" id="class" min="7" placeholder="Введіть номер класу">
+                    <div class="hint">Мінімум 7-й клас</div>
+                </div>
+                <div class="field">
+                    <span>Літера класу</span>
+                    <input type="text" id="classLetter" placeholder="Введіть літеру класу">
+                    <div class="hint">Наприклад, А, Б, В</div>
+                </div>
+                <div class="field">
+                    <span>Кількість квитків</span>
+                    <input type="number" id="tickets" min="1" placeholder="Введіть кількість квитків">
+                    <div id="remainingTickets" class="hint">Введіть бажану кількість квитків</div>
+                </div>
+                <div class="field">
+                    <span>Спосіб оплати</span>
+                    <select id="paymentMethod">
+                        <option value="card">Карткою</option>
+                        <option value="cash">Готівкою</option>
+                    </select>
+                    <div class="hint">Виберіть спосіб оплати</div>
+                </div>
+            </div>
+            <button id="bookBtn">Забронювати квитки</button>
+            <div id="error" class="msg error hidden"></div>
+            <div id="success" class="msg success hidden"></div>
         </div>
-
-        <!-- Секція QR-коду -->
-        <div id="qrSection" class="hidden qr-section">
-            <h2>Ваш квиток</h2>
-            <div id="qrcode"></div>
-            <p id="ticketId"></p>
-            <button id="backToForm" class="secondary">Купити ще квиток</button>
+        <div class="stats">
+            <div class="stat">
+                <div class="label">Всього квитків</div>
+                <div class="value" id="totalTickets">0</div>
+            </div>
+            <div class="stat">
+                <div class="label">Статус продажу</div>
+                <div class="value" id="saleStatus">Активно</div>
+            </div>
         </div>
-
-        <!-- Адмін-панель -->
-        <div id="adminSection" class="hidden admin-section">
-            <h2>Перевірка квитків</h2>
-            <input type="text" id="ticketIdInput" placeholder="Введіть ID квитка">
-            <button id="checkTicket" class="check">Перевірити квиток</button>
-            <div id="ticketInfo"></div>
-            <button id="backToFormFromAdmin" class="secondary">Назад</button>
+        <div id="adminPanel" class="admin-panel card">
+            <h2>Панель адміністратора</h2>
+            <button id="toggleSaleBtn" class="toggle-stop">Зупинити продаж квитків</button>
+            <ul id="adminBookingList" class="admin-list"></ul>
         </div>
-
-        <!-- Кнопка для переходу до адмін-панелі -->
-        <span id="toAdmin" class="to-admin">Перейти до адмін-панелі</span>
     </div>
 
-    <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js"></script>
-    <script>
-        // Лог для перевірки виконання скрипта
-        console.log('Скрипт завантажено');
+    <script type="module">
+        import { initializeApp } from 'https://www.gstatic.com/firebasejs/9.6.1/firebase-app.js';
+        import { getDatabase, ref, push, onValue, set } from 'https://www.gstatic.com/firebasejs/9.6.1/firebase-database.js';
 
-        // Перевірка наявності Firebase
-        if (typeof firebase === 'undefined') {
-            console.error('Firebase SDK не завантажено');
-            alert('Помилка: Не вдалося завантажити Firebase SDK. Перевірте підключення до інтернету або використовуйте локальний сервер (наприклад, live-server).');
-        } else {
-            console.log('Firebase SDK доступний');
-        }
-
-        // Firebase конфігурація
         const firebaseConfig = {
             apiKey: "AIzaSyCS_jrZxtztQeArogU8yfCm4BIiNphapsE",
             authDomain: "party-8c521.firebaseapp.com",
@@ -176,149 +161,194 @@
             measurementId: "G-L76NX1ZBWX"
         };
 
-        // Ініціалізація Firebase
-        let database;
-        try {
-            const app = firebase.initializeApp(firebaseConfig);
-            database = firebase.database();
-            console.log('Firebase ініціалізовано успішно');
-        } catch (error) {
-            console.error('Помилка ініціалізації Firebase:', error.message);
-            alert('Помилка ініціалізації Firebase: ' + error.message + '. Перевірте конфігурацію Firebase у консолі Firebase або підключення до інтернету.');
+        const app = initializeApp(firebaseConfig);
+        console.log('Firebase initialized:', app);
+        const database = getDatabase(app);
+
+        const nameInput = document.getElementById('name');
+        const telegramInput = document.getElementById('telegram');
+        const classInput = document.getElementById('class');
+        const classLetterInput = document.getElementById('classLetter');
+        const ticketsInput = document.getElementById('tickets');
+        const paymentMethodSelect = document.getElementById('paymentMethod');
+        const bookBtn = document.getElementById('bookBtn');
+        const errorDiv = document.getElementById('error');
+        const successDiv = document.getElementById('success');
+        const totalTickets = document.getElementById('totalTickets');
+        const saleStatus = document.getElementById('saleStatus');
+        const adminPanel = document.getElementById('adminPanel');
+        const adminBookingList = document.getElementById('adminBookingList');
+        const toggleSaleBtn = document.getElementById('toggleSaleBtn');
+
+        // Simplified admin check for testing
+        function checkAdmin() {
+            const name = nameInput.value.trim();
+            console.log('Checking admin - Name:', name);
+            if (name === 'Admin2012') {
+                adminPanel.classList.add('active');
+                console.log('Admin panel opened');
+            } else {
+                adminPanel.classList.remove('active');
+                console.log('Admin panel closed');
+            }
         }
 
-        // Перевірка наявності QRCode бібліотеки
-        if (typeof QRCode === 'undefined') {
-            console.error('QRCode бібліотека не завантажена');
-            alert('Помилка: Не вдалося завантажити бібліотеку QRCode. Перевірте підключення до інтернету або використовуйте локальний сервер.');
-        } else {
-            console.log('QRCode бібліотека доступна');
+        // Update button state based on sale status
+        function updateSaleStatus(isActive) {
+            console.log('Updating sale status:', isActive ? 'Active' : 'Stopped');
+            bookBtn.disabled = !isActive;
+            saleStatus.textContent = isActive ? 'Активно' : 'Зупинено';
+            toggleSaleBtn.textContent = isActive ? 'Зупинити продаж квитків' : 'Відновити продаж квитків';
+            toggleSaleBtn.className = isActive ? 'toggle-stop' : 'toggle-start';
         }
 
-        // Елементи DOM
-        const ticketFormSection = document.getElementById('ticketFormSection');
-        const qrSection = document.getElementById('qrSection');
-        const adminSection = document.getElementById('adminSection');
-        const ticketForm = document.getElementById('ticketForm');
-        const qrcodeDiv = document.getElementById('qrcode');
-        const ticketIdDisplay = document.getElementById('ticketId');
-        const backToForm = document.getElementById('backToForm');
-        const toAdmin = document.getElementById('toAdmin');
-        const ticketIdInput = document.getElementById('ticketIdInput');
-        const checkTicket = document.getElementById('checkTicket');
-        const backToFormFromAdmin = document.getElementById('backToFormFromAdmin');
+        // Toggle ticket sale status
+        toggleSaleBtn.addEventListener('click', () => {
+            console.log('Toggling sale status');
+            onValue(ref(database, 'ticketSalesActive'), (snapshot) => {
+                const isActive = snapshot.val() !== false;
+                set(ref(database, 'ticketSalesActive'), !isActive)
+                    .then(() => {
+                        console.log('Sale status updated to:', !isActive);
+                        updateSaleStatus(!isActive);
+                    })
+                    .catch((error) => {
+                        showError('Помилка зміни статусу продажу: ' + error.message);
+                        console.error('Error updating sale status:', error);
+                    });
+            }, { onlyOnce: true });
+        });
 
-        // Перевірка наявності елементів DOM
-        if (!ticketFormSection || !qrSection || !adminSection || !ticketForm || !qrcodeDiv || !ticketIdDisplay || !backToForm || !toAdmin || !ticketIdInput || !checkTicket || !backToFormFromAdmin) {
-            console.error('Один або кілька елементів DOM не знайдено');
-            alert('Помилка: Не вдалося знайти елементи сторінки. Перевірте HTML.');
-        } else {
-            console.log('Усі елементи DOM знайдено');
+        // Monitor ticket sale status
+        onValue(ref(database, 'ticketSalesActive'), (snapshot) => {
+            const isActive = snapshot.val() !== false;
+            console.log('Ticket sales status from Firebase:', isActive);
+            updateSaleStatus(isActive);
+        });
 
-            // Генерація унікального ID квитка
-            function generateTicketId() {
-                return 'TICKET-' + Math.random().toString(36).substr(2, 9).toUpperCase();
+        // Trigger admin check on input change
+        nameInput.addEventListener('input', () => {
+            console.log('Name input changed:', nameInput.value);
+            checkAdmin();
+        });
+        telegramInput.addEventListener('input', () => {
+            console.log('Telegram input changed:', telegramInput.value);
+            checkAdmin();
+        });
+
+        // Book tickets
+        bookBtn.addEventListener('click', async () => {
+            console.log('Booking attempt started');
+            const name = nameInput.value.trim();
+            const telegram = telegramInput.value.trim();
+            const classNum = parseInt(classInput.value);
+            const classLetter = classLetterInput.value.trim().toUpperCase();
+            const tickets = parseInt(ticketsInput.value);
+            const paymentMethod = paymentMethodSelect.value;
+
+            // Validation
+            if (!name) {
+                showError("Будь ласка, введіть ваше ім'я.");
+                console.log('Validation failed: No name');
+                return;
+            }
+            if (!telegram || !telegram.startsWith('@')) {
+                showError('Будь ласка, введіть коректний нік у Telegram (наприклад, @username).');
+                console.log('Validation failed: Invalid Telegram');
+                return;
+            }
+            if (isNaN(classNum) || classNum < 7) {
+                showError('Клас має бути 7 або вище.');
+                console.log('Validation failed: Invalid class number');
+                return;
+            }
+            if (!classLetter || !/^[А-Я]$/.test(classLetter)) {
+                showError('Літера класу має бути однією буквою (наприклад, А, Б, В).');
+                console.log('Validation failed: Invalid class letter');
+                return;
+            }
+            if (isNaN(tickets) || tickets < 1) {
+                showError('Кількість квитків має бути не менше 1.');
+                console.log('Validation failed: Invalid ticket count');
+                return;
+            }
+            if (!paymentMethod) {
+                showError('Будь ласка, виберіть спосіб оплати.');
+                console.log('Validation failed: No payment method');
+                return;
             }
 
-            // Обробка форми покупки
-            ticketForm.addEventListener('submit', (e) => {
-                e.preventDefault();
-                console.log('Кнопка "Купити квиток" натиснута');
-                const name = document.getElementById('name').value;
-                const email = document.getElementById('email').value;
-                const ticketId = generateTicketId();
+            // Check if ticket sales are active
+            onValue(ref(database, 'ticketSalesActive'), (snapshot) => {
+                const isActive = snapshot.val() !== false;
+                console.log('Checking sale status before booking:', isActive);
+                if (!isActive) {
+                    showError('Продаж квитків зупинено адміністратором.');
+                    console.log('Booking failed: Sales stopped');
+                    return;
+                }
 
-                if (database) {
-                    firebase.database().ref('tickets/' + ticketId).set({
-                        name: name,
-                        email: email,
-                        paid: true,
-                        timestamp: firebase.database.ServerValue.TIMESTAMP
-                    }).then(() => {
-                        console.log('Квиток збережено:', ticketId);
-                        ticketFormSection.classList.add('hidden');
-                        qrSection.classList.remove('hidden');
-                        qrcodeDiv.innerHTML = '';
-                        QRCode.toCanvas(qrcodeDiv, ticketId, { width: 200 }, (error) => {
-                            if (error) {
-                                console.error('Помилка генерації QR-коду:', error.message);
-                                alert('Помилка при генерації QR-коду: ' + error.message);
-                            } else {
-                                console.log('QR-код згенеровано');
-                            }
-                        });
-                        ticketIdDisplay.textContent = `ID квитка: ${ticketId}`;
-                    }).catch((error) => {
-                        console.error('Помилка збереження квитка:', error.message);
-                        alert('Помилка при купівлі квитка: ' + error.message);
+                const booking = {
+                    name: name,
+                    telegram: telegram,
+                    class: classNum,
+                    classLetter: classLetter,
+                    tickets: tickets,
+                    paymentMethod: paymentMethod,
+                    timestamp: Date.now()
+                };
+
+                console.log('Submitting booking:', booking);
+                push(ref(database, 'bookings'), booking)
+                    .then(() => {
+                        const successMessage = paymentMethod === 'cash' 
+                            ? 'Квитки успішно заброньовано! Будь ласка, оплатіть готівкою в кабінеті 101 школи.' 
+                            : 'Квитки успішно заброньовано! Ми надішлемо вам деталі для оплати карткою.';
+                        showSuccess(successMessage);
+                        console.log('Booking successful');
+                        nameInput.value = '';
+                        telegramInput.value = '';
+                        classInput.value = '';
+                        classLetterInput.value = '';
+                        ticketsInput.value = '';
+                        paymentMethodSelect.value = 'card';
+                        checkAdmin();
+                    })
+                    .catch((error) => {
+                        showError('Помилка бронювання: ' + error.message);
+                        console.error('Booking error:', error);
                     });
-                } else {
-                    console.error('Firebase database не ініціалізовано');
-                    alert('Помилка: База даних не доступна. Перевірте підключення до Firebase.');
-                }
-            });
+            }, { onlyOnce: true });
+        });
 
-            // Повернення до форми
-            backToForm.addEventListener('click', () => {
-                console.log('Кнопка "Купити ще квиток" натиснута');
-                qrSection.classList.add('hidden');
-                ticketFormSection.classList.remove('hidden');
-                ticketForm.reset();
-            });
-
-            // Перехід до адмін-панелі
-            toAdmin.addEventListener('click', () => {
-                console.log('Кнопка "Перейти до адмін-панелі" натиснута');
-                ticketFormSection.classList.add('hidden');
-                qrSection.classList.add('hidden');
-                adminSection.classList.remove('hidden');
-            });
-
-            // Повернення з адмін-панелі
-            backToFormFromAdmin.addEventListener('click', () => {
-                console.log('Кнопка "Назад" з адмін-панелі натиснута');
-                adminSection.classList.add('hidden');
-                ticketFormSection.classList.remove('hidden');
-                ticketIdInput.value = '';
-                ticketInfo.innerHTML = '';
-            });
-
-            // Перевірка квитка
-            checkTicket.addEventListener('click', () => {
-                console.log('Кнопка "Перевірити квиток" натиснута');
-                const ticketId = ticketIdInput.value.trim();
-                if (ticketId) {
-                    if (database) {
-                        firebase.database().ref('tickets/' + ticketId).once('value').then((snapshot) => {
-                            if (snapshot.exists()) {
-                                const data = snapshot.val();
-                                ticketInfo.innerHTML = `
-                                    <p><strong>Ім'я:</strong> ${data.name}</p>
-                                    <p><strong>Email:</strong> ${data.email}</p>
-                                    <p><strong>Статус оплати:</strong> ${data.paid ? 'Оплачено' : 'Не оплачено'}</p>
-                                    <p><strong>Дата покупки:</strong> ${new Date(data.timestamp).toLocaleString('uk-UA')}</p>
-                                `;
-                                console.log('Квиток знайдено:', data);
-                            } else {
-                                ticketInfo.innerHTML = '<p class="error">Квиток не знайдено!</p>';
-                                console.log('Квиток не знайдено:', ticketId);
-                            }
-                        }).catch((error) => {
-                            console.error('Помилка перевірки квитка:', error.message);
-                            alert('Помилка при перевірці квитка: ' + error.message);
-                        });
-                    } else {
-                        console.error('Firebase database не ініціалізовано');
-                        alert('Помилка: База даних не доступна. Перевірте підключення до Firebase.');
-                    }
-                } else {
-                    ticketInfo.innerHTML = '<p class="error">Введіть ID квитка!</p>';
-                    console.log('ID квитка не введено');
-                }
-            });
-
-            console.log('Обробники подій встановлено');
+        function showError(message) {
+            errorDiv.textContent = message;
+            errorDiv.classList.remove('hidden');
+            successDiv.classList.add('hidden');
         }
+
+        function showSuccess(message) {
+            successDiv.textContent = message;
+            successDiv.classList.remove('hidden');
+            errorDiv.classList.add('hidden');
+        }
+
+        // Display total tickets and admin bookings
+        onValue(ref(database, 'bookings'), (snapshot) => {
+            let total = 0;
+            adminBookingList.innerHTML = '';
+            const bookings = snapshot.val();
+            if (bookings) {
+                Object.values(bookings).forEach((booking) => {
+                    total += booking.tickets;
+                    const li = document.createElement('li');
+                    li.textContent = `${booking.name} (${booking.telegram}, ${booking.class}${booking.classLetter}, ${booking.paymentMethod === 'cash' ? 'Готівка' : 'Картка'}) - ${booking.tickets} квитків`;
+                    adminBookingList.appendChild(li);
+                });
+            }
+            totalTickets.textContent = total;
+            console.log('Total tickets updated:', total);
+        });
     </script>
 </body>
 </html>
