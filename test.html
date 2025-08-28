@@ -153,7 +153,7 @@
             </div>
         </div>
         <div class="card">
-            <h2>Список замовлень</h2>
+            <h2>Ваші замовлення</h2>
             <ul id="publicBookingList" class="public-list"></ul>
         </div>
         <div id="adminPanel" class="admin-panel card">
@@ -270,9 +270,57 @@
             updateSaleStatus(isActive);
         });
 
-        // Trigger admin check on input change
-        nameInput.addEventListener('input', checkAdmin);
-        telegramInput.addEventListener('input', checkAdmin);
+        // Trigger admin check and update public list on input change
+        function updatePublicList() {
+            const currentTelegram = telegramInput.value.trim().toLowerCase();
+            publicBookingList.innerHTML = '';
+            let total = 0;
+
+            // Firebase bookings
+            onValue(ref(database, 'bookings'), (snapshot) => {
+                const bookings = snapshot.val() || {};
+                Object.entries(bookings).forEach(([id, booking]) => {
+                    if (booking.telegram.toLowerCase() === currentTelegram) {
+                        total += booking.tickets;
+                        const statusText = booking.status === 'confirmed' ? 'Підтверджено' :
+                                           booking.status === 'rejected' ? 'Відхилено' : 'Замовлено';
+                        const publicLi = document.createElement('li');
+                        publicLi.innerHTML = `
+                            ${booking.name} (${booking.telegram}, ${booking.class}${booking.classLetter}, 
+                            ${booking.paymentMethod === 'cash' ? 'Готівка' : 'Картка'}) - ${booking.tickets} квитків 
+                            <span class="status-${booking.status}">${statusText}</span>
+                        `;
+                        publicBookingList.appendChild(publicLi);
+                    }
+                });
+            }, { onlyOnce: true });
+
+            // Local bookings
+            const localBookings = JSON.parse(localStorage.getItem('bookings') || '[]');
+            localBookings.forEach((booking) => {
+                if (booking.telegram.toLowerCase() === currentTelegram) {
+                    total += booking.tickets;
+                    const statusText = booking.status === 'confirmed' ? 'Підтверджено' :
+                                       booking.status === 'rejected' ? 'Відхилено' : 'Замовлено';
+                    const publicLi = document.createElement('li');
+                    publicLi.innerHTML = `
+                        ${booking.name} (${booking.telegram}, ${booking.class}${booking.classLetter}, 
+                        ${booking.paymentMethod === 'cash' ? 'Готівка' : 'Картка'}) - ${booking.tickets} квитків 
+                        <span class="status-${booking.status}">${statusText} (Локально)</span>
+                    `;
+                    publicBookingList.appendChild(publicLi);
+                }
+            });
+        }
+
+        nameInput.addEventListener('input', () => {
+            checkAdmin();
+            updatePublicList();
+        });
+        telegramInput.addEventListener('input', () => {
+            checkAdmin();
+            updatePublicList();
+        });
 
         // Save booking to localStorage
         function saveToLocalStorage(booking) {
@@ -280,6 +328,7 @@
             localBookings.push({ ...booking, localId: Date.now().toString() });
             localStorage.setItem('bookings', JSON.stringify(localBookings));
             console.log('Booking saved to localStorage:', booking);
+            updatePublicList(); // Update public list after saving
         }
 
         // Sync local bookings with Firebase
@@ -293,9 +342,9 @@
                     synced: true,
                     status: booking.status || 'pending'
                 })
-                    .then(() => {
+                    .then((ref) => {
                         console.log('Local booking synced to Firebase:', booking);
-                        bookingStatusManager.setStatus(booking.localId, booking.status || 'pending', true);
+                        bookingStatusManager.setStatus(ref.key, booking.status || 'pending', false);
                     })
                     .catch((error) => {
                         console.error('Error syncing local booking:', error);
@@ -304,6 +353,7 @@
 
             localStorage.setItem('bookings', '[]'); // Clear local storage after syncing
             console.log('Local bookings cleared after sync');
+            updatePublicList();
         }
 
         // Book tickets
@@ -410,32 +460,20 @@
             errorDiv.classList.add('hidden');
         }
 
-        // Display total tickets, public bookings, and admin bookings
+        // Display total tickets and admin bookings
         onValue(ref(database, 'bookings'), (snapshot) => {
             let total = 0;
             adminBookingList.innerHTML = '';
-            publicBookingList.innerHTML = '';
             const bookings = snapshot.val() || {};
             const localBookings = JSON.parse(localStorage.getItem('bookings') || '[]');
 
-            // Display Firebase bookings
+            // Display Firebase bookings (admin only)
             Object.entries(bookings).forEach(([id, booking]) => {
                 total += booking.tickets;
+                bookingStatusManager.setStatus(id, booking.status); // Update status in closure
+                const adminLi = document.createElement('li');
                 const statusText = booking.status === 'confirmed' ? 'Підтверджено' :
                                    booking.status === 'rejected' ? 'Відхилено' : 'Замовлено';
-                bookingStatusManager.setStatus(id, booking.status); // Update status in closure
-
-                // Public list (visible to all)
-                const publicLi = document.createElement('li');
-                publicLi.innerHTML = `
-                    ${booking.name} (${booking.telegram}, ${booking.class}${booking.classLetter}, 
-                    ${booking.paymentMethod === 'cash' ? 'Готівка' : 'Картка'}) - ${booking.tickets} квитків 
-                    <span class="status-${booking.status}">${statusText}</span>
-                `;
-                publicBookingList.appendChild(publicLi);
-
-                // Admin list (visible only to admin)
-                const adminLi = document.createElement('li');
                 adminLi.innerHTML = `
                     ${booking.name} (${booking.telegram}, ${booking.class}${booking.classLetter}, 
                     ${booking.paymentMethod === 'cash' ? 'Готівка' : 'Картка'}) - ${booking.tickets} квитків 
@@ -448,23 +486,12 @@
                 adminBookingList.appendChild(adminLi);
             });
 
-            // Display local bookings
+            // Display local bookings (admin only)
             localBookings.forEach((booking) => {
                 total += booking.tickets;
                 const statusText = booking.status === 'confirmed' ? 'Підтверджено' :
                                    booking.status === 'rejected' ? 'Відхилено' : 'Замовлено';
                 bookingStatusManager.setStatus(booking.localId, booking.status, true);
-
-                // Public list
-                const publicLi = document.createElement('li');
-                publicLi.innerHTML = `
-                    ${booking.name} (${booking.telegram}, ${booking.class}${booking.classLetter}, 
-                    ${booking.paymentMethod === 'cash' ? 'Готівка' : 'Картка'}) - ${booking.tickets} квитків 
-                    <span class="status-${booking.status}">${statusText} (Локально)</span>
-                `;
-                publicBookingList.appendChild(publicLi);
-
-                // Admin list
                 const adminLi = document.createElement('li');
                 adminLi.innerHTML = `
                     ${booking.name} (${booking.telegram}, ${booking.class}${booking.classLetter}, 
@@ -504,6 +531,8 @@
                     bookingStatusManager.setStatus(bookingId, 'rejected', isLocal);
                 });
             });
+
+            updatePublicList(); // Update public list after loading bookings
         });
 
         // Initial sync check
