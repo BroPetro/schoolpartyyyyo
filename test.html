@@ -13,6 +13,9 @@
             --accent: #6ae28e;
             --danger: #ff6b6b;
             --ring: rgba(106, 226, 142, 0.35);
+            --confirmed: #4caf50;
+            --rejected: #f44336;
+            --pending: #ff9800;
         }
 
         * { box-sizing: border-box; }
@@ -66,52 +69,30 @@
         button:disabled { opacity: .6; cursor: not-allowed; }
         button.toggle-stop { background: var(--danger); }
         button.toggle-start { background: var(--accent); }
-        button.confirm-btn { background: var(--accent); font-size: 14px; padding: 8px 12px; margin-left: 10px; }
+        button.confirm { background: var(--confirmed); }
+        button.reject { background: var(--rejected); }
 
         .msg { margin-top: 10px; min-height: 18px; }
         .msg.error { color: var(--danger); }
         .msg.success { color: var(--accent); }
-
-        .ticket-info {
-            background: var(--card);
-            border: 1px solid #222635;
-            border-radius: 10px;
-            padding: 16px;
-            margin-top: 20px;
-            display: none;
-        }
-        .ticket-info.active { display: block; }
-        .ticket-info p { margin: 8px 0; font-size: 14px; }
-        .ticket-info .label { color: var(--muted); font-weight: 600; display: inline-block; width: 140px; }
-        .ticket-info .value { color: var(--text); }
-        .ticket-info .status-pending { color: var(--muted); }
-        .ticket-info .status-confirmed { color: var(--accent); }
-        .ticket-info .qrcode-container {
-            margin-top: 20px;
-            text-align: center;
-        }
-        .ticket-info .qrcode-container img {
-            width: 256px;
-            height: 256px;
-            border: 1px solid #222635;
-            border-radius: 8px;
-            background: #fff; /* Для контрасту QR-коду */
-        }
 
         .admin-panel { display: none; }
         .admin-panel.active { display: block; }
         .admin-list { list-style: none; padding: 0; margin: 0; display: grid; gap: 8px; }
         .admin-list li {
             background: #0f121a; border: 1px solid #212535; padding: 10px 12px; border-radius: 8px;
-            display: flex; align-items: center; justify-content: space-between;
+            display: flex; justify-content: space-between; align-items: center;
         }
+        .public-list { list-style: none; padding: 0; margin: 0; display: grid; gap: 8px; }
+        .public-list li {
+            background: #0f121a; border: 1px solid #212535; padding: 10px 12px; border-radius: 8px;
+        }
+        .status-pending { color: var(--pending); }
+        .status-confirmed { color: var(--confirmed); }
+        .status-rejected { color: var(--rejected); }
 
         @media (max-width: 720px) {
             .grid { grid-template-columns: 1fr; }
-            .ticket-info .qrcode-container img {
-                width: 200px;
-                height: 200px;
-            }
         }
     </style>
 </head>
@@ -135,13 +116,13 @@
                 </div>
                 <div class="field">
                     <span>Клас</span>
-                    <input type="number" id="class" min="8" placeholder="Введіть номер класу">
-                    <div class="hint">Мінімум 8-й клас</div>
+                    <input type="number" id="class" min="7" placeholder="Введіть номер класу">
+                    <div class="hint">Мінімум 7-й клас</div>
                 </div>
                 <div class="field">
                     <span>Літера класу</span>
                     <input type="text" id="classLetter" placeholder="Введіть літеру класу">
-                    <div class="hint">А, Б, В або Г</div>
+                    <div class="hint">Наприклад, А, Б, В</div>
                 </div>
                 <div class="field">
                     <span>Кількість квитків</span>
@@ -160,18 +141,6 @@
             <button id="bookBtn">Забронювати квитки</button>
             <div id="error" class="msg error hidden"></div>
             <div id="success" class="msg success hidden"></div>
-            <div id="ticketInfo" class="ticket-info">
-                <p><span class="label">Ім'я:</span><span class="value" id="ticketName"></span></p>
-                <p><span class="label">Нік у Telegram:</span><span class="value" id="ticketTelegram"></span></p>
-                <p><span class="label">Клас:</span><span class="value" id="ticketClass"></span></p>
-                <p><span class="label">Кількість квитків:</span><span class="value" id="ticketCount"></span></p>
-                <p><span class="label">Спосіб оплати:</span><span class="value" id="ticketPayment"></span></p>
-                <p><span class="label">Статус:</span><span class="value status-pending" id="ticketStatus">Очікує підтвердження</span></p>
-                <p><span class="label">Час бронювання:</span><span class="value" id="ticketTime"></span></p>
-                <div class="qrcode-container">
-                    <img id="qrcode" alt="QR Code" style="display: none;">
-                </div>
-            </div>
         </div>
         <div class="stats">
             <div class="stat">
@@ -182,6 +151,10 @@
                 <div class="label">Статус продажу</div>
                 <div class="value" id="saleStatus">Активно</div>
             </div>
+        </div>
+        <div class="card">
+            <h2>Список замовлень</h2>
+            <ul id="publicBookingList" class="public-list"></ul>
         </div>
         <div id="adminPanel" class="admin-panel card">
             <h2>Панель адміністратора</h2>
@@ -222,16 +195,33 @@
         const saleStatus = document.getElementById('saleStatus');
         const adminPanel = document.getElementById('adminPanel');
         const adminBookingList = document.getElementById('adminBookingList');
+        const publicBookingList = document.getElementById('publicBookingList');
         const toggleSaleBtn = document.getElementById('toggleSaleBtn');
-        const ticketInfo = document.getElementById('ticketInfo');
-        const ticketName = document.getElementById('ticketName');
-        const ticketTelegram = document.getElementById('ticketTelegram');
-        const ticketClass = document.getElementById('ticketClass');
-        const ticketCount = document.getElementById('ticketCount');
-        const ticketPayment = document.getElementById('ticketPayment');
-        const ticketStatus = document.getElementById('ticketStatus');
-        const ticketTime = document.getElementById('ticketTime');
-        const qrCodeImg = document.getElementById('qrcode');
+
+        // Closure to protect status management
+        const bookingStatusManager = (() => {
+            const statusMap = new Map(); // Private storage for statuses
+
+            const setStatus = (bookingId, status, isLocal = false) => {
+                statusMap.set(bookingId, status);
+                if (!isLocal) {
+                    update(ref(database, `bookings/${bookingId}`), { status })
+                        .catch((error) => {
+                            console.error('Error updating Firebase status:', error);
+                            showError('Помилка оновлення статусу: ' + error.message);
+                        });
+                }
+                const localBookings = JSON.parse(localStorage.getItem('bookings') || '[]');
+                const updatedBookings = localBookings.map((booking) =>
+                    booking.localId === bookingId ? { ...booking, status } : booking
+                );
+                localStorage.setItem('bookings', JSON.stringify(updatedBookings));
+            };
+
+            const getStatus = (bookingId) => statusMap.get(bookingId) || 'pending';
+
+            return { setStatus, getStatus };
+        })();
 
         // Simplified admin check for testing
         function checkAdmin() {
@@ -264,6 +254,7 @@
                     .then(() => {
                         console.log('Sale status updated to:', !isActive);
                         updateSaleStatus(!isActive);
+                        if (isActive) syncLocalBookings(); // Sync local bookings when sales are resumed
                     })
                     .catch((error) => {
                         showError('Помилка зміни статусу продажу: ' + error.message);
@@ -280,39 +271,40 @@
         });
 
         // Trigger admin check on input change
-        nameInput.addEventListener('input', () => {
-            console.log('Name input changed:', nameInput.value);
-            checkAdmin();
-        });
-        telegramInput.addEventListener('input', () => {
-            console.log('Telegram input changed:', telegramInput.value);
-            checkAdmin();
-        });
+        nameInput.addEventListener('input', checkAdmin);
+        telegramInput.addEventListener('input', checkAdmin);
 
-        // Load previous ticket from localStorage on page load
-        window.addEventListener('load', () => {
-            const ticketData = localStorage.getItem('lastTicket');
-            if (ticketData) {
-                const booking = JSON.parse(ticketData);
-                ticketInfo.classList.add('active');
-                ticketName.textContent = booking.name;
-                ticketTelegram.textContent = booking.telegram;
-                ticketClass.textContent = `${booking.class}${booking.classLetter}`;
-                ticketCount.textContent = booking.tickets;
-                ticketPayment.textContent = booking.paymentMethod === 'cash' ? 'Готівка' : 'Картка';
-                ticketStatus.textContent = booking.status === 'pending' ? 'Очікує підтвердження' : 'Підтверджено';
-                ticketStatus.className = booking.status === 'pending' ? 'value status-pending' : 'value status-confirmed';
-                ticketTime.textContent = new Date(booking.timestamp).toLocaleString('uk-UA');
-                // Load QR code from booking ID
-                if (booking.id) {
-                    const qrData = encodeURIComponent(`Booking ID: ${booking.id}`);
-                    qrCodeImg.src = `https://api.qrserver.com/v1/create-qr-code/?size=256x256&data=${qrData}`;
-                    qrCodeImg.style.display = 'block';
-                    console.log('Loaded QR code from localStorage for booking:', booking.id);
-                }
-                console.log('Loaded ticket from localStorage:', booking);
-            }
-        });
+        // Save booking to localStorage
+        function saveToLocalStorage(booking) {
+            const localBookings = JSON.parse(localStorage.getItem('bookings') || '[]');
+            localBookings.push({ ...booking, localId: Date.now().toString() });
+            localStorage.setItem('bookings', JSON.stringify(localBookings));
+            console.log('Booking saved to localStorage:', booking);
+        }
+
+        // Sync local bookings with Firebase
+        function syncLocalBookings() {
+            const localBookings = JSON.parse(localStorage.getItem('bookings') || '[]');
+            if (localBookings.length === 0) return;
+
+            localBookings.forEach((booking) => {
+                push(ref(database, 'bookings'), {
+                    ...booking,
+                    synced: true,
+                    status: booking.status || 'pending'
+                })
+                    .then(() => {
+                        console.log('Local booking synced to Firebase:', booking);
+                        bookingStatusManager.setStatus(booking.localId, booking.status || 'pending', true);
+                    })
+                    .catch((error) => {
+                        console.error('Error syncing local booking:', error);
+                    });
+            });
+
+            localStorage.setItem('bookings', '[]'); // Clear local storage after syncing
+            console.log('Local bookings cleared after sync');
+        }
 
         // Book tickets
         bookBtn.addEventListener('click', async () => {
@@ -335,13 +327,13 @@
                 console.log('Validation failed: Invalid Telegram');
                 return;
             }
-            if (isNaN(classNum) || classNum < 8) {
-                showError('Клас має бути 8 або вище.');
+            if (isNaN(classNum) || classNum < 7) {
+                showError('Клас має бути 7 або вище.');
                 console.log('Validation failed: Invalid class number');
                 return;
             }
-            if (!['А', 'Б', 'В', 'Г'].includes(classLetter)) {
-                showError('Літера класу має бути А, Б, В або Г.');
+            if (!classLetter || !/^[А-Я]$/.test(classLetter)) {
+                showError('Літера класу має бути однією буквою (наприклад, А, Б, В).');
                 console.log('Validation failed: Invalid class letter');
                 return;
             }
@@ -356,6 +348,17 @@
                 return;
             }
 
+            const booking = {
+                name: name,
+                telegram: telegram,
+                class: classNum,
+                classLetter: classLetter,
+                tickets: tickets,
+                paymentMethod: paymentMethod,
+                timestamp: Date.now(),
+                status: 'pending'
+            };
+
             // Check if ticket sales are active
             onValue(ref(database, 'ticketSalesActive'), (snapshot) => {
                 const isActive = snapshot.val() !== false;
@@ -363,53 +366,21 @@
                 if (!isActive) {
                     showError('Продаж квитків зупинено адміністратором.');
                     console.log('Booking failed: Sales stopped');
+                    saveToLocalStorage(booking); // Save to localStorage if sales are stopped
+                    showSuccess('Замовлення збережено локально. Воно буде синхронізовано, коли продаж відновиться.');
                     return;
                 }
 
-                const booking = {
-                    name: name,
-                    telegram: telegram,
-                    class: classNum,
-                    classLetter: classLetter,
-                    tickets: tickets,
-                    paymentMethod: paymentMethod,
-                    timestamp: Date.now(),
-                    status: 'pending' // Default status
-                };
-
-                console.log('Submitting booking:', booking);
-                push(ref(database, 'bookings'), booking)
-                    .then((snapshot) => {
-                        const bookingId = snapshot.key;
+                console.log('Submitting booking to Firebase:', booking);
+                push(ref(database, 'bookings'), { ...booking, synced: true })
+                    .then((ref) => {
+                        saveToLocalStorage({ ...booking, synced: true, localId: ref.key }); // Save to localStorage
+                        bookingStatusManager.setStatus(ref.key, 'pending');
                         const successMessage = paymentMethod === 'cash' 
                             ? 'Квитки успішно заброньовано! Будь ласка, оплатіть готівкою в кабінеті 101 школи.' 
                             : 'Квитки успішно заброньовано! Ми надішлемо вам деталі для оплати карткою.';
                         showSuccess(successMessage);
                         console.log('Booking successful');
-
-                        // Save to localStorage with booking ID
-                        booking.id = bookingId;
-                        localStorage.setItem('lastTicket', JSON.stringify(booking));
-                        console.log('Saved ticket to localStorage:', booking);
-
-                        // Display ticket info
-                        ticketInfo.classList.add('active');
-                        ticketName.textContent = name;
-                        ticketTelegram.textContent = telegram;
-                        ticketClass.textContent = `${classNum}${classLetter}`;
-                        ticketCount.textContent = tickets;
-                        ticketPayment.textContent = paymentMethod === 'cash' ? 'Готівка' : 'Картка';
-                        ticketStatus.textContent = 'Очікує підтвердження';
-                        ticketStatus.className = 'value status-pending';
-                        ticketTime.textContent = new Date(booking.timestamp).toLocaleString('uk-UA');
-
-                        // Generate QR code using qrserver.com API
-                        const qrData = encodeURIComponent(`Booking ID: ${bookingId}`);
-                        qrCodeImg.src = `https://api.qrserver.com/v1/create-qr-code/?size=256x256&data=${qrData}`;
-                        qrCodeImg.style.display = 'block';
-                        console.log('QR code generated for booking:', bookingId);
-
-                        // Clear form
                         nameInput.value = '';
                         telegramInput.value = '';
                         classInput.value = '';
@@ -421,6 +392,8 @@
                     .catch((error) => {
                         showError('Помилка бронювання: ' + error.message);
                         console.error('Booking error:', error);
+                        saveToLocalStorage(booking); // Save to localStorage on error
+                        showSuccess('Замовлення збережено локально через помилку мережі.');
                     });
             }, { onlyOnce: true });
         });
@@ -429,8 +402,6 @@
             errorDiv.textContent = message;
             errorDiv.classList.remove('hidden');
             successDiv.classList.add('hidden');
-            ticketInfo.classList.remove('active');
-            qrCodeImg.style.display = 'none'; // Hide QR code on error
         }
 
         function showSuccess(message) {
@@ -439,50 +410,108 @@
             errorDiv.classList.add('hidden');
         }
 
-        // Display total tickets and admin bookings
+        // Display total tickets, public bookings, and admin bookings
         onValue(ref(database, 'bookings'), (snapshot) => {
             let total = 0;
             adminBookingList.innerHTML = '';
-            const bookings = snapshot.val();
-            if (bookings) {
-                Object.entries(bookings).forEach(([id, booking]) => {
-                    total += booking.tickets;
-                    const li = document.createElement('li');
-                    li.textContent = `${booking.name} (${booking.telegram}, ${booking.class}${booking.classLetter}, ${booking.paymentMethod === 'cash' ? 'Готівка' : 'Картка'}, ${booking.status === 'pending' ? 'Очікує підтвердження' : 'Підтверджено'}) - ${booking.tickets} квитків`;
-                    if (booking.status === 'pending') {
-                        const confirmBtn = document.createElement('button');
-                        confirmBtn.textContent = 'Підтвердити';
-                        confirmBtn.className = 'confirm-btn';
-                        confirmBtn.addEventListener('click', () => {
-                            update(ref(database, `bookings/${id}`), { status: 'confirmed' })
-                                .then(() => {
-                                    console.log(`Booking ${id} confirmed`);
-                                    // Update localStorage if this is the current user's ticket
-                                    const ticketData = localStorage.getItem('lastTicket');
-                                    if (ticketData) {
-                                        const storedTicket = JSON.parse(ticketData);
-                                        if (storedTicket.id === id) {
-                                            storedTicket.status = 'confirmed';
-                                            localStorage.setItem('lastTicket', JSON.stringify(storedTicket));
-                                            ticketStatus.textContent = 'Підтверджено';
-                                            ticketStatus.className = 'value status-confirmed';
-                                            console.log('Updated localStorage with confirmed status');
-                                        }
-                                    }
-                                })
-                                .catch((error) => {
-                                    showError('Помилка підтвердження: ' + error.message);
-                                    console.error('Confirmation error:', error);
-                                });
-                        });
-                        li.appendChild(confirmBtn);
-                    }
-                    adminBookingList.appendChild(li);
-                });
-            }
+            publicBookingList.innerHTML = '';
+            const bookings = snapshot.val() || {};
+            const localBookings = JSON.parse(localStorage.getItem('bookings') || '[]');
+
+            // Display Firebase bookings
+            Object.entries(bookings).forEach(([id, booking]) => {
+                total += booking.tickets;
+                const statusText = booking.status === 'confirmed' ? 'Підтверджено' :
+                                   booking.status === 'rejected' ? 'Відхилено' : 'Замовлено';
+                bookingStatusManager.setStatus(id, booking.status); // Update status in closure
+
+                // Public list (visible to all)
+                const publicLi = document.createElement('li');
+                publicLi.innerHTML = `
+                    ${booking.name} (${booking.telegram}, ${booking.class}${booking.classLetter}, 
+                    ${booking.paymentMethod === 'cash' ? 'Готівка' : 'Картка'}) - ${booking.tickets} квитків 
+                    <span class="status-${booking.status}">${statusText}</span>
+                `;
+                publicBookingList.appendChild(publicLi);
+
+                // Admin list (visible only to admin)
+                const adminLi = document.createElement('li');
+                adminLi.innerHTML = `
+                    ${booking.name} (${booking.telegram}, ${booking.class}${booking.classLetter}, 
+                    ${booking.paymentMethod === 'cash' ? 'Готівка' : 'Картка'}) - ${booking.tickets} квитків 
+                    <span class="status-${booking.status}">${statusText}</span>
+                    <div>
+                        <button class="confirm" data-id="${id}" data-local="false">Підтвердити</button>
+                        <button class="reject" data-id="${id}" data-local="false">Відхилити</button>
+                    </div>
+                `;
+                adminBookingList.appendChild(adminLi);
+            });
+
+            // Display local bookings
+            localBookings.forEach((booking) => {
+                total += booking.tickets;
+                const statusText = booking.status === 'confirmed' ? 'Підтверджено' :
+                                   booking.status === 'rejected' ? 'Відхилено' : 'Замовлено';
+                bookingStatusManager.setStatus(booking.localId, booking.status, true);
+
+                // Public list
+                const publicLi = document.createElement('li');
+                publicLi.innerHTML = `
+                    ${booking.name} (${booking.telegram}, ${booking.class}${booking.classLetter}, 
+                    ${booking.paymentMethod === 'cash' ? 'Готівка' : 'Картка'}) - ${booking.tickets} квитків 
+                    <span class="status-${booking.status}">${statusText} (Локально)</span>
+                `;
+                publicBookingList.appendChild(publicLi);
+
+                // Admin list
+                const adminLi = document.createElement('li');
+                adminLi.innerHTML = `
+                    ${booking.name} (${booking.telegram}, ${booking.class}${booking.classLetter}, 
+                    ${booking.paymentMethod === 'cash' ? 'Готівка' : 'Картка'}) - ${booking.tickets} квитків 
+                    <span class="status-${booking.status}">${statusText} (Локально)</span>
+                    <div>
+                        <button class="confirm" data-id="${booking.localId}" data-local="true">Підтвердити</button>
+                        <button class="reject" data-id="${booking.localId}" data-local="true">Відхилити</button>
+                    </div>
+                `;
+                adminBookingList.appendChild(adminLi);
+            });
+
             totalTickets.textContent = total;
             console.log('Total tickets updated:', total);
+
+            // Add event listeners for status buttons (admin only)
+            document.querySelectorAll('.confirm').forEach((btn) => {
+                btn.addEventListener('click', () => {
+                    if (nameInput.value.trim() !== 'Admin2012') {
+                        showError('Тільки адміністратор може змінювати статуси.');
+                        return;
+                    }
+                    const bookingId = btn.getAttribute('data-id');
+                    const isLocal = btn.getAttribute('data-local') === 'true';
+                    bookingStatusManager.setStatus(bookingId, 'confirmed', isLocal);
+                });
+            });
+            document.querySelectorAll('.reject').forEach((btn) => {
+                btn.addEventListener('click', () => {
+                    if (nameInput.value.trim() !== 'Admin2012') {
+                        showError('Тільки адміністратор може змінювати статуси.');
+                        return;
+                    }
+                    const bookingId = btn.getAttribute('data-id');
+                    const isLocal = btn.getAttribute('data-local') === 'true';
+                    bookingStatusManager.setStatus(bookingId, 'rejected', isLocal);
+                });
+            });
         });
+
+        // Initial sync check
+        onValue(ref(database, 'ticketSalesActive'), (snapshot) => {
+            if (snapshot.val() !== false) {
+                syncLocalBookings();
+            }
+        }, { onlyOnce: true });
     </script>
 </body>
 </html>
