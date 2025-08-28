@@ -86,6 +86,17 @@
         .ticket-info .value { color: var(--text); }
         .ticket-info .status-pending { color: var(--muted); }
         .ticket-info .status-confirmed { color: var(--accent); }
+        .ticket-info .qrcode-container {
+            margin-top: 20px;
+            text-align: center;
+        }
+        .ticket-info .qrcode-container img {
+            width: 256px;
+            height: 256px;
+            border: 1px solid #222635;
+            border-radius: 8px;
+            background: #fff; /* Для контрасту QR-коду */
+        }
 
         .admin-panel { display: none; }
         .admin-panel.active { display: block; }
@@ -97,6 +108,10 @@
 
         @media (max-width: 720px) {
             .grid { grid-template-columns: 1fr; }
+            .ticket-info .qrcode-container img {
+                width: 200px;
+                height: 200px;
+            }
         }
     </style>
 </head>
@@ -153,6 +168,9 @@
                 <p><span class="label">Спосіб оплати:</span><span class="value" id="ticketPayment"></span></p>
                 <p><span class="label">Статус:</span><span class="value status-pending" id="ticketStatus">Очікує підтвердження</span></p>
                 <p><span class="label">Час бронювання:</span><span class="value" id="ticketTime"></span></p>
+                <div class="qrcode-container">
+                    <img id="qrcode" alt="QR Code" style="display: none;">
+                </div>
             </div>
         </div>
         <div class="stats">
@@ -213,6 +231,7 @@
         const ticketPayment = document.getElementById('ticketPayment');
         const ticketStatus = document.getElementById('ticketStatus');
         const ticketTime = document.getElementById('ticketTime');
+        const qrCodeImg = document.getElementById('qrcode');
 
         // Simplified admin check for testing
         function checkAdmin() {
@@ -284,6 +303,13 @@
                 ticketStatus.textContent = booking.status === 'pending' ? 'Очікує підтвердження' : 'Підтверджено';
                 ticketStatus.className = booking.status === 'pending' ? 'value status-pending' : 'value status-confirmed';
                 ticketTime.textContent = new Date(booking.timestamp).toLocaleString('uk-UA');
+                // Load QR code from booking ID
+                if (booking.id) {
+                    const qrData = encodeURIComponent(`Booking ID: ${booking.id}`);
+                    qrCodeImg.src = `https://api.qrserver.com/v1/create-qr-code/?size=256x256&data=${qrData}`;
+                    qrCodeImg.style.display = 'block';
+                    console.log('Loaded QR code from localStorage for booking:', booking.id);
+                }
                 console.log('Loaded ticket from localStorage:', booking);
             }
         });
@@ -377,6 +403,12 @@
                         ticketStatus.className = 'value status-pending';
                         ticketTime.textContent = new Date(booking.timestamp).toLocaleString('uk-UA');
 
+                        // Generate QR code using qrserver.com API
+                        const qrData = encodeURIComponent(`Booking ID: ${bookingId}`);
+                        qrCodeImg.src = `https://api.qrserver.com/v1/create-qr-code/?size=256x256&data=${qrData}`;
+                        qrCodeImg.style.display = 'block';
+                        console.log('QR code generated for booking:', bookingId);
+
                         // Clear form
                         nameInput.value = '';
                         telegramInput.value = '';
@@ -398,6 +430,7 @@
             errorDiv.classList.remove('hidden');
             successDiv.classList.add('hidden');
             ticketInfo.classList.remove('active');
+            qrCodeImg.style.display = 'none'; // Hide QR code on error
         }
 
         function showSuccess(message) {
