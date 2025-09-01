@@ -15,7 +15,7 @@
     }
 
     header {
-      padding: 40px 20px;
+      padding: 40px 20px 20px;
     }
 
     header h1 {
@@ -58,6 +58,31 @@
       color: #ff6f61;
     }
 
+    .highlight {
+      color: #ffd166;
+      font-weight: 700;
+    }
+
+    .countdown {
+      margin: 20px 0;
+      padding: 15px;
+      background: #222;
+      border-radius: 8px;
+      text-align: center;
+    }
+
+    .countdown h3 {
+      margin-bottom: 10px;
+      font-size: 1.3em;
+      color: #ff6f61;
+    }
+
+    .time {
+      font-size: 1.2em;
+      font-weight: bold;
+      letter-spacing: 1px;
+    }
+
     .btn {
       display: block;
       margin: 25px auto 0;
@@ -88,23 +113,51 @@
 <body>
   <header>
     <h1>Вечірка 2025 🎉</h1>
-    <p>Найочікуваніша тусовка року</p>
   </header>
 
   <div class="card">
     <h2>Деталі</h2>
-    <p class="detail">📅 <span>Дата:</span> 15 вересня 2025</p>
-    <p class="detail">🕗 <span>Час:</span> 19:00</p>
-    <p class="detail">📍 <span>Місце:</span> Львів, вул. Вечіркова 36</p>
-    <p class="detail">💸 <span>Ціна:</span> 150 грн</p>
-    <p class="detail">🎶 Атмосфера, музика та розваги 🔥</p>
+    <p class="detail">📅 <span>Дата:</span> <span class="highlight">15 вересня образно</span></p>
+    <p class="detail">🕗 <span>Час:</span> <span class="highlight"> 16:00 образно <span></p>
+    <p class="detail">📍 <span>Місце:</span> СЗШ №36 Укриття</p>
+    <p class="detail">💸 <span>Ціна:</span> 300 грн</p>
+
+    <!-- Віджет зворотного відліку -->
+    <div class="countdown">
+      <h3>⏳ До вечірки залишилось:</h3>
+      <div id="timer" class="time">Завантаження...</div>
+    </div>
 
     <!-- Кнопка назад у бота -->
     <a href="https://t.me/registeronparty36bot" class="btn">⬅ Повернутись у бота</a>
   </div>
 
   <footer>
-    © 2025 Вечірка. Зроблено з ❤️ 
+    © 2025 Вечірка. Зроблено з ❤️
   </footer>
+
+  <script>
+    // Дата вечірки
+    const eventDate = new Date("September 15, 2025 16:00:00").getTime();
+
+    const timer = document.getElementById("timer");
+
+    setInterval(() => {
+      const now = new Date().getTime();
+      const distance = eventDate - now;
+
+      if (distance <= 0) {
+        timer.innerHTML = "🎉 Вечірка вже почалась!";
+        return;
+      }
+
+      const days = Math.floor(distance / (1000 * 60 * 60 * 24));
+      const hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+      const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+      const seconds = Math.floor((distance % (1000 * 60)) / 1000);
+
+      timer.innerHTML = `${days}д ${hours}г ${minutes}хв ${seconds}с`;
+    }, 1000);
+  </script>
 </body>
 </html>
