@@ -1,354 +1,110 @@
 <!DOCTYPE html>
 <html lang="uk">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Замовлення квитків на шкільну вечірку </title>
-    <style>
-        :root {
-            --bg: #0e0f12;
-            --card: #151821;
-            --text: #e6e8f0;
-            --muted: #9aa3b2;
-            --accent: #6ae28e;
-            --danger: #ff6b6b;
-            --ring: rgba(106, 226, 142, 0.35);
-        }
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Вечірка 2025 🎉</title>
+  <style>
+    body {
+      font-family: 'Inter', sans-serif;
+      background: #111;
+      color: #eee;
+      margin: 0;
+      padding: 0;
+      text-align: center;
+    }
 
-        * { box-sizing: border-box; }
-        html, body { margin: 0; padding: 0; }
-        body {
-            background: radial-gradient(1200px 800px at 20% -10%, #1b1f2b, #0e0f12);
-            color: var(--text);
-            font: 16px/1.4 system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, "Noto Sans", Arial, sans-serif;
-        }
+    header {
+      padding: 40px 20px;
+    }
 
-        .wrap { width: min(960px, 92vw); margin: 0 auto; padding: 20px 0; }
-        header.wrap { padding-top: 32px; }
+    header h1 {
+      font-size: 2.5em;
+      margin-bottom: 10px;
+      font-weight: 700;
+    }
 
-        h1 { margin: 0 0 8px; font-size: 30px; }
-        h2 { margin: 0 0 14px; font-size: 22px; }
+    header p {
+      font-size: 1.1em;
+      color: #aaa;
+      margin: 0;
+    }
 
-        .muted { color: var(--muted); }
+    .card {
+      background: #1c1c1c;
+      margin: 30px auto;
+      padding: 25px;
+      border-radius: 12px;
+      max-width: 420px;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.4);
+      text-align: left;
+    }
 
-        .card {
-            background: var(--card);
-            border: 1px solid #222635;
-            border-radius: 14px;
-            padding: 18px;
-            margin: 14px 0 20px;
-            box-shadow: 0 10px 24px rgba(0,0,0,0.22), inset 0 1px 0 rgba(255,255,255,0.02);
-        }
+    .card h2 {
+      font-size: 1.6em;
+      margin-bottom: 15px;
+      color: #fff;
+    }
 
-        .stats {
-            display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin-top: 14px;
-        }
-        .stat { background: var(--card); border: 1px solid #232739; padding: 12px; border-radius: 10px; text-align: center; }
-        .stat .label { color: var(--muted); font-size: 12px; }
-        .stat .value { font-size: 22px; font-weight: 700; margin-top: 4px; }
+    .detail {
+      font-size: 1.1em;
+      margin: 10px 0;
+      padding: 8px 0;
+      border-bottom: 1px solid #333;
+    }
 
-        .grid {
-            display: grid; gap: 12px; grid-template-columns: repeat(2, 1fr);
-        }
-        .field { display: flex; flex-direction: column; gap: 6px; }
-        .field span { font-weight: 600; }
-        .field input, .field select {
-            border: 1px solid #2b3147; background: #0f1118; color: var(--text);
-            padding: 10px 12px; border-radius: 8px; outline: none; transition: box-shadow .2s, border-color .2s;
-        }
-        .field input:focus, .field select:focus { border-color: var(--accent); box-shadow: 0 0 0 4px var(--ring); }
-        .hint { color: var(--muted); font-size: 12px; }
+    .detail span {
+      font-weight: 600;
+      color: #ff6f61;
+    }
 
-        button {
-            appearance: none; border: 0; background: var(--accent); color: #0b0d12;
-            font-weight: 700; padding: 10px 16px; border-radius: 10px; cursor: pointer;
-        }
-        button:disabled { opacity: .6; cursor: not-allowed; }
-        button.toggle-stop { background: var(--danger); }
-        button.toggle-start { background: var(--accent); }
+    .btn {
+      display: block;
+      margin: 25px auto 0;
+      padding: 12px 20px;
+      background: #ff6f61;
+      color: #fff;
+      border-radius: 8px;
+      font-size: 1.1em;
+      font-weight: 600;
+      text-decoration: none;
+      text-align: center;
+      width: fit-content;
+      transition: 0.3s;
+    }
 
-        .msg { margin-top: 10px; min-height: 18px; }
-        .msg.error { color: var(--danger); }
-        .msg.success { color: var(--accent); }
+    .btn:hover {
+      background: #e0554c;
+      transform: translateY(-2px);
+    }
 
-        .admin-panel { display: none; }
-        .admin-panel.active { display: block; }
-        .admin-list { list-style: none; padding: 0; margin: 0; display: grid; gap: 8px; }
-        .admin-list li {
-            background: #0f121a; border: 1px solid #212535; padding: 10px 12px; border-radius: 8px;
-        }
-
-        @media (max-width: 720px) {
-            .grid { grid-template-columns: 1fr; }
-        }
-    </style>
+    footer {
+      margin: 30px 0;
+      font-size: 0.9em;
+      color: #666;
+    }
+  </style>
 </head>
 <body>
-    <header class="wrap">
-        <h1>Замовлення квитків на шкільну вечірку</h1>
-        <p class="muted">Заповніть форму, щоб забронювати квитки</p>
-    </header>
-    <div class="wrap">
-        <div class="card">
-            <div class="grid">
-                <div class="field">
-                    <span>Ім'я</span>
-                    <input type="text" id="name" placeholder="Введіть ваше ім'я">
-                    <div class="hint">Введіть ваше повне ім'я</div>
-                </div>
-                <div class="field">
-                    <span>Нік у Telegram</span>
-                    <input type="text" id="telegram" placeholder="Введіть ваш нік (@username)">
-                    <div class="hint">Наприклад, @username</div>
-                </div>
-                <div class="field">
-                    <span>Клас</span>
-                    <input type="number" id="class" min="7" placeholder="Введіть номер класу">
-                    <div class="hint">Мінімум 7-й клас</div>
-                </div>
-                <div class="field">
-                    <span>Літера класу</span>
-                    <input type="text" id="classLetter" placeholder="Введіть літеру класу">
-                    <div class="hint">Наприклад, А, Б, В</div>
-                </div>
-                <div class="field">
-                    <span>Кількість квитків</span>
-                    <input type="number" id="tickets" min="1" placeholder="Введіть кількість квитків">
-                    <div id="remainingTickets" class="hint">Введіть бажану кількість квитків</div>
-                </div>
-                <div class="field">
-                    <span>Спосіб оплати</span>
-                    <select id="paymentMethod">
-                        <option value="card">Карткою</option>
-                        <option value="cash">Готівкою</option>
-                    </select>
-                    <div class="hint">Виберіть спосіб оплати</div>
-                </div>
-            </div>
-            <button id="bookBtn">Забронювати квитки</button>
-            <div id="error" class="msg error hidden"></div>
-            <div id="success" class="msg success hidden"></div>
-        </div>
-        <div class="stats">
-            <div class="stat">
-                <div class="label">Всього квитків</div>
-                <div class="value" id="totalTickets">0</div>
-            </div>
-            <div class="stat">
-                <div class="label">Статус продажу</div>
-                <div class="value" id="saleStatus">Активно</div>
-            </div>
-        </div>
-        <div id="adminPanel" class="admin-panel card">
-            <h2>Панель адміністратора</h2>
-            <button id="toggleSaleBtn" class="toggle-stop">Зупинити продаж квитків</button>
-            <ul id="adminBookingList" class="admin-list"></ul>
-        </div>
-    </div>
+  <header>
+    <h1>Вечірка 2025 🎉</h1>
+    <p>Найочікуваніша тусовка року</p>
+  </header>
 
-    <script type="module">
-        import { initializeApp } from 'https://www.gstatic.com/firebasejs/9.6.1/firebase-app.js';
-        import { getDatabase, ref, push, onValue, set } from 'https://www.gstatic.com/firebasejs/9.6.1/firebase-database.js';
+  <div class="card">
+    <h2>Деталі</h2>
+    <p class="detail">📅 <span>Дата:</span> 15 вересня 2025</p>
+    <p class="detail">🕗 <span>Час:</span> 19:00</p>
+    <p class="detail">📍 <span>Місце:</span> Львів, вул. Вечіркова 36</p>
+    <p class="detail">💸 <span>Ціна:</span> 150 грн</p>
+    <p class="detail">🎶 Атмосфера, музика та розваги 🔥</p>
 
-        const firebaseConfig = {
-            apiKey: "AIzaSyCS_jrZxtztQeArogU8yfCm4BIiNphapsE",
-            authDomain: "party-8c521.firebaseapp.com",
-            databaseURL: "https://party-8c521-default-rtdb.europe-west1.firebasedatabase.app",
-            projectId: "party-8c521",
-            storageBucket: "party-8c521.firebasestorage.app",
-            messagingSenderId: "630338352175",
-            appId: "1:630338352175:web:96367f9e3223677b58c2da",
-            measurementId: "G-L76NX1ZBWX"
-        };
+    <!-- Кнопка назад у бота -->
+    <a href="https://t.me/registeronparty36bot" class="btn">⬅ Повернутись у бота</a>
+  </div>
 
-        const app = initializeApp(firebaseConfig);
-        console.log('Firebase initialized:', app);
-        const database = getDatabase(app);
-
-        const nameInput = document.getElementById('name');
-        const telegramInput = document.getElementById('telegram');
-        const classInput = document.getElementById('class');
-        const classLetterInput = document.getElementById('classLetter');
-        const ticketsInput = document.getElementById('tickets');
-        const paymentMethodSelect = document.getElementById('paymentMethod');
-        const bookBtn = document.getElementById('bookBtn');
-        const errorDiv = document.getElementById('error');
-        const successDiv = document.getElementById('success');
-        const totalTickets = document.getElementById('totalTickets');
-        const saleStatus = document.getElementById('saleStatus');
-        const adminPanel = document.getElementById('adminPanel');
-        const adminBookingList = document.getElementById('adminBookingList');
-        const toggleSaleBtn = document.getElementById('toggleSaleBtn');
-
-        // Simplified admin check for testing
-        function checkAdmin() {
-            const name = nameInput.value.trim();
-            console.log('Checking admin - Name:', name);
-            if (name === 'Admin2012') {
-                adminPanel.classList.add('active');
-                console.log('Admin panel opened');
-            } else {
-                adminPanel.classList.remove('active');
-                console.log('Admin panel closed');
-            }
-        }
-
-        // Update button state based on sale status
-        function updateSaleStatus(isActive) {
-            console.log('Updating sale status:', isActive ? 'Active' : 'Stopped');
-            bookBtn.disabled = !isActive;
-            saleStatus.textContent = isActive ? 'Активно' : 'Зупинено';
-            toggleSaleBtn.textContent = isActive ? 'Зупинити продаж квитків' : 'Відновити продаж квитків';
-            toggleSaleBtn.className = isActive ? 'toggle-stop' : 'toggle-start';
-        }
-
-        // Toggle ticket sale status
-        toggleSaleBtn.addEventListener('click', () => {
-            console.log('Toggling sale status');
-            onValue(ref(database, 'ticketSalesActive'), (snapshot) => {
-                const isActive = snapshot.val() !== false;
-                set(ref(database, 'ticketSalesActive'), !isActive)
-                    .then(() => {
-                        console.log('Sale status updated to:', !isActive);
-                        updateSaleStatus(!isActive);
-                    })
-                    .catch((error) => {
-                        showError('Помилка зміни статусу продажу: ' + error.message);
-                        console.error('Error updating sale status:', error);
-                    });
-            }, { onlyOnce: true });
-        });
-
-        // Monitor ticket sale status
-        onValue(ref(database, 'ticketSalesActive'), (snapshot) => {
-            const isActive = snapshot.val() !== false;
-            console.log('Ticket sales status from Firebase:', isActive);
-            updateSaleStatus(isActive);
-        });
-
-        // Trigger admin check on input change
-        nameInput.addEventListener('input', () => {
-            console.log('Name input changed:', nameInput.value);
-            checkAdmin();
-        });
-        telegramInput.addEventListener('input', () => {
-            console.log('Telegram input changed:', telegramInput.value);
-            checkAdmin();
-        });
-
-        // Book tickets
-        bookBtn.addEventListener('click', async () => {
-            console.log('Booking attempt started');
-            const name = nameInput.value.trim();
-            const telegram = telegramInput.value.trim();
-            const classNum = parseInt(classInput.value);
-            const classLetter = classLetterInput.value.trim().toUpperCase();
-            const tickets = parseInt(ticketsInput.value);
-            const paymentMethod = paymentMethodSelect.value;
-
-            // Validation
-            if (!name) {
-                showError("Будь ласка, введіть ваше ім'я.");
-                console.log('Validation failed: No name');
-                return;
-            }
-            if (!telegram || !telegram.startsWith('@')) {
-                showError('Будь ласка, введіть коректний нік у Telegram (наприклад, @username).');
-                console.log('Validation failed: Invalid Telegram');
-                return;
-            }
-            if (isNaN(classNum) || classNum < 7) {
-                showError('Клас має бути 7 або вище.');
-                console.log('Validation failed: Invalid class number');
-                return;
-            }
-            if (!classLetter || !/^[А-Я]$/.test(classLetter)) {
-                showError('Літера класу має бути однією буквою (наприклад, А, Б, В).');
-                console.log('Validation failed: Invalid class letter');
-                return;
-            }
-            if (isNaN(tickets) || tickets < 1) {
-                showError('Кількість квитків має бути не менше 1.');
-                console.log('Validation failed: Invalid ticket count');
-                return;
-            }
-            if (!paymentMethod) {
-                showError('Будь ласка, виберіть спосіб оплати.');
-                console.log('Validation failed: No payment method');
-                return;
-            }
-
-            // Check if ticket sales are active
-            onValue(ref(database, 'ticketSalesActive'), (snapshot) => {
-                const isActive = snapshot.val() !== false;
-                console.log('Checking sale status before booking:', isActive);
-                if (!isActive) {
-                    showError('Продаж квитків зупинено адміністратором.');
-                    console.log('Booking failed: Sales stopped');
-                    return;
-                }
-
-                const booking = {
-                    name: name,
-                    telegram: telegram,
-                    class: classNum,
-                    classLetter: classLetter,
-                    tickets: tickets,
-                    paymentMethod: paymentMethod,
-                    timestamp: Date.now()
-                };
-
-                console.log('Submitting booking:', booking);
-                push(ref(database, 'bookings'), booking)
-                    .then(() => {
-                        const successMessage = paymentMethod === 'cash' 
-                            ? 'Квитки успішно заброньовано! Будь ласка, оплатіть готівкою в кабінеті 101 школи.' 
-                            : 'Квитки успішно заброньовано! Ми надішлемо вам деталі для оплати карткою.';
-                        showSuccess(successMessage);
-                        console.log('Booking successful');
-                        nameInput.value = '';
-                        telegramInput.value = '';
-                        classInput.value = '';
-                        classLetterInput.value = '';
-                        ticketsInput.value = '';
-                        paymentMethodSelect.value = 'card';
-                        checkAdmin();
-                    })
-                    .catch((error) => {
-                        showError('Помилка бронювання: ' + error.message);
-                        console.error('Booking error:', error);
-                    });
-            }, { onlyOnce: true });
-        });
-
-        function showError(message) {
-            errorDiv.textContent = message;
-            errorDiv.classList.remove('hidden');
-            successDiv.classList.add('hidden');
-        }
-
-        function showSuccess(message) {
-            successDiv.textContent = message;
-            successDiv.classList.remove('hidden');
-            errorDiv.classList.add('hidden');
-        }
-
-        // Display total tickets and admin bookings
-        onValue(ref(database, 'bookings'), (snapshot) => {
-            let total = 0;
-            adminBookingList.innerHTML = '';
-            const bookings = snapshot.val();
-            if (bookings) {
-                Object.values(bookings).forEach((booking) => {
-                    total += booking.tickets;
-                    const li = document.createElement('li');
-                    li.textContent = `${booking.name} (${booking.telegram}, ${booking.class}${booking.classLetter}, ${booking.paymentMethod === 'cash' ? 'Готівка' : 'Картка'}) - ${booking.tickets} квитків`;
-                    adminBookingList.appendChild(li);
-                });
-            }
-            totalTickets.textContent = total;
-            console.log('Total tickets updated:', total);
-        });
-    </script>
+  <footer>
+    © 2025 Вечірка. Зроблено з ❤️ 
+  </footer>
 </body>
 </html>
