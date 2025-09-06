@@ -1,163 +1,103 @@
 <!DOCTYPE html>
-<html lang="uk">
+<html lang="en">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Вечірка 2025 🎉</title>
+  <title></title>
   <style>
-    body {
-      font-family: 'Inter', sans-serif;
-      background: #111;
-      color: #eee;
+    html, body {
+      height: 100%;
       margin: 0;
       padding: 0;
-      text-align: center;
     }
 
-    header {
-      padding: 40px 20px 20px;
-    }
-
-    header h1 {
-      font-size: 2.5em;
-      margin-bottom: 10px;
-      font-weight: 700;
-    }
-
-    header p {
-      font-size: 1.1em;
-      color: #aaa;
-      margin: 0;
-    }
-
-    .card {
-      background: #1c1c1c;
-      margin: 30px auto;
-      padding: 25px;
-      border-radius: 12px;
-      max-width: 420px;
-      box-shadow: 0 4px 20px rgba(0,0,0,0.4);
-      text-align: left;
-    }
-
-    .card h2 {
-      font-size: 1.6em;
-      margin-bottom: 15px;
+    body {
+      font-family: 'Inter', sans-serif;
+      background: linear-gradient(135deg, #1a1a1d, #3a0ca3, #f72585);
+      background-size: 400% 400%;
+      animation: gradientBG 12s ease infinite;
+      display: flex;
+      align-items: center;
+      justify-content: center;
       color: #fff;
-    }
-
-    .detail {
-      font-size: 1.1em;
-      margin: 10px 0;
-      padding: 8px 0;
-      border-bottom: 1px solid #333;
-    }
-
-    .detail span {
-      font-weight: 600;
-      color: #ff6f61;
-    }
-
-    .highlight {
-      color: #ffd166;
-      font-weight: 700;
-    }
-
-    .countdown {
-      margin: 20px 0;
-      padding: 15px;
-      background: #222;
-      border-radius: 8px;
       text-align: center;
     }
 
-    .countdown h3 {
-      margin-bottom: 10px;
-      font-size: 1.3em;
-      color: #ff6f61;
+    @keyframes gradientBG {
+      0% { background-position: 0% 50%; }
+      50% { background-position: 100% 50%; }
+      100% { background-position: 0% 50%; }
     }
-
-    .time {
-      font-size: 1.2em;
+      .btn {
+      display: inline-block;
+      padding: 15px 40px;
+      font-size: 18px;
       font-weight: bold;
-      letter-spacing: 1px;
-    }
-
-    .btn {
-      display: block;
-      margin: 25px auto 0;
-      padding: 12px 20px;
-      background: #ff6f61;
       color: #fff;
-      border-radius: 8px;
-      font-size: 1.1em;
-      font-weight: 600;
+      background: linear-gradient(45deg, #f72585, #7209b7);
+      border: none;
+      border-radius: 30px;
       text-decoration: none;
-      text-align: center;
-      width: fit-content;
-      transition: 0.3s;
-    }
+      cursor: pointer;
+      transition: all 0.3s ease;
+      box-shadow: 0 8px 20px rgba(0,0,0,0.3);
+  }
 
-    .btn:hover {
-      background: #e0554c;
-      transform: translateY(-2px);
+  .btn:hover {
+      transform: scale(1.1);
+      background: linear-gradient(45deg, #7209b7, #f72585);
+      box-shadow: 0 10px 30px rgba(247, 37, 133, 0.8);
+  }
+    .div { 
+        background-color: rgb(11, 0, 43);
+        width: 700px;
+        height: 800px;
+        border-radius: 3%;
     }
+    .text{
+        color: white;
+    }
+    button{
+        width: 200px;
+        height: 50px;
+        border-radius: 15%;
+        background-color: red;
+    }
+a {
+  text-decoration: none;
+}
 
-    footer {
-      margin: 30px 0;
-      font-size: 0.9em;
-      color: #666;
-    }
   </style>
 </head>
 <body>
-  <header>
-    <h1>Вечірка 2025 🎉</h1>
-  </header>
+    <div class="div">
+        <h2>🎉 Шкільна вечірка — подія, яку ти не можеш пропустити!</h2><br>
 
-  <div class="card">
-    <h2>Деталі</h2>
-    <p class="detail">📅 <span>Дата:</span> <span class="highlight">15 вересня образно</span></p>
-    <p class="detail">🕗 <span>Час:</span> <span class="highlight"> 16:00 образно <span></p>
-    <p class="detail">📍 <span>Місце:</span> СЗШ №36 Укриття</p>
-    <p class="detail">💸 <span>Ціна:</span> 300 грн</p>
+        <h3>📅 Дата: 12 вересня<br>
+            ⏰ Час: 16:00<br>
+            📍 Місце: шкільне укриття
+        </h3><br>
 
-    <!-- Віджет зворотного відліку -->
-    <div class="countdown">
-      <h3>⏳ До вечірки залишилось:</h3>
-      <div id="timer" class="time">Завантаження...</div>
+        <h3>✨ Що на тебе чекає?<br>
+            • Запальна дискотека <a href="https://www.youtube.com/watch?v=dQw4w9WgXcQ&list=RDdQw4w9WgXcQ&start_radio=1" >💃🕺</a><br>
+            • Веселі конкурси 🎲<br>
+            • Атмосфера драйву та сюрпризів 🎁<br>
+            • Смачні закуски та напої 🍕🥤<br>
+        </h3><br>
+        <h3>
+            🎭 Тематика: яскравий стиль (одягнися так, щоб сяяти!)<br>
+            💵 Вхід: 200 грн
+        </h3><br>
+        <h3>
+            📌 Додаткова інформація:<br>
+Реєстрація відкрита до 8 вересня! Поспішай забронювати своє місце, адже кількість квитків обмежена!
+        </h3><br>
+        <h3>
+            🎊 Не пропусти найяскравішу подію року!<br>
+Реєструйся вже зараз і готуйся до незабутнього вечора!
+        </h3>
+       <a href="https://t.me/registeronparty36bot" target="_blank" class="btn">🚀 Реєстрація</a>
     </div>
-
-    <!-- Кнопка назад у бота -->
-    <a href="https://t.me/registeronparty36bot" class="btn">⬅ Повернутись у бота</a>
-  </div>
-
-  <footer>
-    © 2025 Вечірка. Зроблено з ❤️
-  </footer>
-
-  <script>
-    // Дата вечірки
-    const eventDate = new Date("September 15, 2025 16:00:00").getTime();
-
-    const timer = document.getElementById("timer");
-
-    setInterval(() => {
-      const now = new Date().getTime();
-      const distance = eventDate - now;
-
-      if (distance <= 0) {
-        timer.innerHTML = "🎉 Вечірка вже почалась!";
-        return;
-      }
-
-      const days = Math.floor(distance / (1000 * 60 * 60 * 24));
-      const hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-      const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
-      const seconds = Math.floor((distance % (1000 * 60)) / 1000);
-
-      timer.innerHTML = `${days}д ${hours}г ${minutes}хв ${seconds}с`;
-    }, 1000);
-  </script>
+    
 </body>
 </html>
