@@ -1,121 +1,121 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="uk">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Правила Вечірки</title>
-    <style>
-        html, body {
-            height: 100%;
-            margin: 0;
-            padding: 0;
-            overflow-x: hidden;
-        }
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Правила Вечірки</title>
+  <style>
+    html, body {
+      height: 100%;
+      margin: 0;
+      padding: 0;
+      overflow-x: hidden;
+    }
 
-        body {
-            font-family: 'Inter', sans-serif;
-            background: linear-gradient(135deg, #1a1a1d, #3a0ca3, #f72585);
-            background-size: 400% 400%;
-            animation: gradientBG 12s ease infinite;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: #fff;
-            text-align: center;
-        }
+    body {
+      font-family: 'Inter', sans-serif;
+      background: linear-gradient(135deg, #1a1a1d, #3a0ca3, #f72585);
+      background-size: 400% 400%;
+      animation: gradientBG 12s ease infinite;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #fff;
+      text-align: center;
+      padding: 20px; /* Щоб контент не лип до країв на телефонах */
+    }
 
-        @keyframes gradientBG {
-            0% { background-position: 0% 50%; }
-            50% { background-position: 100% 50%; }
-            100% { background-position: 0% 50%; }
-        }
+    @keyframes gradientBG {
+      0% { background-position: 0% 50%; }
+      50% { background-position: 100% 50%; }
+      100% { background-position: 0% 50%; }
+    }
 
-        .div {
-            background-color: rgba(11, 0, 43, 0.9);
-            width: 800px;
-            max-width: 90%;
-            min-height: 600px;
-            padding: 30px;
-            border-radius: 20px;
-            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
-            backdrop-filter: blur(5px);
-            animation: fadeIn 1s ease-in-out;
-        }
+    .div {
+      background-color: rgba(11, 0, 43, 0.9);
+      width: 100%;
+      max-width: 800px;
+      min-height: auto;
+      padding: 20px;
+      border-radius: 20px;
+      box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
+      backdrop-filter: blur(5px);
+      animation: fadeIn 1s ease-in-out;
+    }
 
-        @keyframes fadeIn {
-            0% { opacity: 0; transform: translateY(20px); }
-            100% { opacity: 1; transform: translateY(0); }
-        }
+    @keyframes fadeIn {
+      0% { opacity: 0; transform: translateY(20px); }
+      100% { opacity: 1; transform: translateY(0); }
+    }
 
-        h3 {
-            font-size: 36px;
-            margin-bottom: 20px;
-            text-transform: uppercase;
-            letter-spacing: 2px;
-            color: #f72585;
-            text-shadow: 0 0 10px rgba(247, 37, 133, 0.8);
-        }
+    h3 {
+      font-size: clamp(22px, 5vw, 36px);
+      margin-bottom: 20px;
+      text-transform: uppercase;
+      letter-spacing: 2px;
+      color: #f72585;
+      text-shadow: 0 0 10px rgba(247, 37, 133, 0.8);
+    }
 
-        ol {
-            text-align: left;
-            padding: 0 20px;
-            font-size: 18px;
-            line-height: 1.8;
-        }
+    ol {
+      text-align: left;
+      padding: 0 10px;
+      font-size: clamp(14px, 3.5vw, 18px);
+      line-height: 1.6;
+    }
 
-        .text li {
-            margin-bottom: 15px;
-            color: #e0e0e0;
-            transition: color 0.3s ease;
-        }
+    .text li {
+      margin-bottom: 12px;
+      color: #e0e0e0;
+      transition: color 0.3s ease;
+    }
 
-        .text li:hover {
-            color: #f72585;
-        }
+    .text li:hover {
+      color: #f72585;
+    }
 
-        .btn {
-            display: inline-block;
-            padding: 15px 40px;
-            font-size: 18px;
-            font-weight: bold;
-            color: #fff;
-            background: linear-gradient(45deg, #f72585, #7209b7);
-            border: none;
-            border-radius: 30px;
-            text-decoration: none;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
-            margin-top: 20px;
-        }
+    .btn {
+      display: inline-block;
+      padding: 12px 30px;
+      font-size: clamp(14px, 4vw, 18px);
+      font-weight: bold;
+      color: #fff;
+      background: linear-gradient(45deg, #f72585, #7209b7);
+      border: none;
+      border-radius: 30px;
+      text-decoration: none;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
+      margin-top: 20px;
+    }
 
-        .btn:hover {
-            transform: scale(1.1);
-            background: linear-gradient(45deg, #7209b7, #f72585);
-            box-shadow: 0 10px 30px rgba(247, 37, 133, 0.8);
-        }
+    .btn:hover {
+      transform: scale(1.05);
+      background: linear-gradient(45deg, #7209b7, #f72585);
+      box-shadow: 0 10px 30px rgba(247, 37, 133, 0.8);
+    }
 
-        a {
-            text-decoration: none;
-        }
-    </style>
+    a {
+      text-decoration: none;
+    }
+  </style>
 </head>
 <body>
-    <div class="div">
-        <h3>Правила Вечірки</h3>
-        <ol class="text">
-            <li>Організатори мають право вигнати вас з вечірки у разі порушення правил, при цьому гроші згорають, за грубі порушення можливо потрапити у чорний список.</li>
-            <li>Заборонено приходити на вечірку у стані алкогольного або наркотичного сп’яніння.</li>
-            <li>Заборонено приносити із собою алкоголь, електронні сигарети, тютюнові вироби, вироби що містять нікотин, будь-які колючі або ріжучі предмети, перцеві балончики та іншу зброю, види зброї.</li>
-            <li>Ви даєте згоду на фото- та відео- фіксацію.</li>
-            <li>Заборонено заходити та перебувати на невідведену для вечірки зону (визначену організаторами).</li>
-            <li>Заборонено вилазити на сцену.</li>
-            <li>Заборонено порушувати дисципліну на вечірці.</li>
-            <li>Ви даєте згоду на огляд особистих речей з метою виявлення заборонених речей.</li>
-            <li>Не сміти! Всі мусять стежити за порядком. Якщо щось розлилося чи зламалося, повідом про це організатору.</li>
-            
-        </ol>
-        <a href="https://t.me/registeronparty36bot" class="btn">До бота</a>
-    </div>
+  <div class="div">
+    <h3>Правила Вечірки</h3>
+    <ol class="text">
+      <li>Організатори мають право вигнати вас з вечірки у разі порушення правил...</li>
+      <li>Заборонено приходити у стані алкогольного або наркотичного сп’яніння.</li>
+      <li>Заборонено приносити алкоголь, сигарети, зброю тощо.</li>
+      <li>Ви даєте згоду на фото- та відео- фіксацію.</li>
+      <li>Не заходьте у зони, не відведені для вечірки.</li>
+      <li>Заборонено вилазити на сцену.</li>
+      <li>Не порушуйте дисципліну.</li>
+      <li>Можливий огляд особистих речей.</li>
+      <li>Не смітіть! Якщо щось трапилось — повідомте організаторів.</li>
+    </ol>
+    <a href="https://t.me/registeronparty36bot" class="btn">До бота</a>
+  </div>
 </body>
 </html>
