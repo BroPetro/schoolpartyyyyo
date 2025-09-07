@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Правила</title>
+    <style>
+          html, body {
+      height: 100%;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      background: linear-gradient(135deg, #1a1a1d, #3a0ca3, #f72585);
+      background-size: 400% 400%;
+      animation: gradientBG 12s ease infinite;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #fff;
+      text-align: center;
+    }
+
+    @keyframes gradientBG {
+      0% { background-position: 0% 50%; }
+      50% { background-position: 100% 50%; }
+      100% { background-position: 0% 50%; }
+    }
+      .btn {
+      display: inline-block;
+      padding: 15px 40px;
+      font-size: 18px;
+      font-weight: bold;
+      color: #fff;
+      background: linear-gradient(45deg, #f72585, #7209b7);
+      border: none;
+      border-radius: 30px;
+      text-decoration: none;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      box-shadow: 0 8px 20px rgba(0,0,0,0.3);
+  }
+
+  .btn:hover {
+      transform: scale(1.1);
+      background: linear-gradient(45deg, #7209b7, #f72585);
+      box-shadow: 0 10px 30px rgba(247, 37, 133, 0.8);
+  }
+    .div { 
+        background-color: rgb(11, 0, 43);
+        width: 700px;
+        height: 800px;
+        border-radius: 3%;
+    }
+    .text{
+        color: white;
+    }
+    button{
+        width: 200px;
+        height: 50px;
+        border-radius: 15%;
+        background-color: red;
+    }
+a {
+  text-decoration: none;
+}
+
+    </style>
+</head>
+<body>
+    <div class="div">
+        <h3>Правила</h3>
+    </div>
+</body>
+</html>
